@@ -17,12 +17,14 @@ namespace AsyncUnity {
         const char * file,
         const size_t testNameBufferSize,
         const char * thing,
-        Describe::f_describe cb
+        Describe::f_describe cb,
+        const unsigned long timeout = 0
       ) :
         running(true),
         status(0),
         _root(new Describe(thing, cb)),
         _file(file),
+        _timeout(timeout),
         _testNameBufferSize(testNameBufferSize),
         _testName1(new char[_testNameBufferSize]),
         _testName2(new char[_testNameBufferSize]),
@@ -50,6 +52,7 @@ namespace AsyncUnity {
 
       Describe * _root;
       const char * _file;
+      const unsigned long _timeout;
 
       // we use 2 buffers to make concatenation simpler
       const size_t _testNameBufferSize;
@@ -80,7 +83,7 @@ namespace AsyncUnity {
               {
                 It * it = entry->as<It>();
                 _concatenateTestName(it->should);
-                UnityDefaultTestRun(it->cb, _currentTestName, it->line);
+                UnityDefaultTestRun(it->sync, _currentTestName, it->line);
                 Entry * next = it->next;
                 delete it;
                 return next;
