@@ -32,7 +32,7 @@ namespace AsyncUnity {
 
       const char * format = 
         "MAX_DEPTH: %lu\n"
-        "MAX_POPS (MAX_DEPTH): %lu\n"
+        "MAX_POPS (should equal MAX_DEPTH): %lu\n"
         "MAX_DESCRIBES: %lu\n"
         "MAX_ITS: %lu\n"
         "MAX_ASYNC_ITS: %lu\n";

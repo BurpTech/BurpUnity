@@ -7,7 +7,7 @@
 
 using Root = AsyncUnity::Root;
 using Describe = AsyncUnity::Entry::Describe;
-using f_done = AsyncUnity::Entry::Entry::f_done;
+using f_done = AsyncUnity::Entry::AsyncIt::f_done;
 using f_test = AsyncUnity::Entry::AsyncIt::f_test;
 
 #endif

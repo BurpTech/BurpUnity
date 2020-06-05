@@ -10,16 +10,17 @@ namespace AsyncUnity {
 
       public:
 
-        using f_testCallback = std::function<void(f_done done)>;
+        using f_done = std::function<void()>;
+        using f_testCallback = std::function<void()>;
         using f_test = std::function<void(const char * label, const int line, f_testCallback cb)>;
-        using f_async = std::function<void(f_test test)>;
+        using f_async = std::function<void(f_done done, f_test test)>;
 
         static const Error * error;
 
         static AsyncIt * create(const char * should, const int line, const f_async it, const long timeout);
 
         const Error * free() override;
-        void run(f_done done) override;
+        void run(Entry::f_done done) override;
 
       private:
 

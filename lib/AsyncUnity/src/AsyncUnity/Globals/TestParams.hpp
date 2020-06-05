@@ -10,7 +10,6 @@ namespace AsyncUnity {
     extern int testLine;
     extern const char * testMessage;
     extern Timeout timeout;
-    extern Entry::Entry::f_done done;
     extern Entry::It::f_testCallback testCallback;
     extern Entry::AsyncIt::f_testCallback asyncTestCallback;
 

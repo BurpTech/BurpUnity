@@ -45,12 +45,8 @@ namespace AsyncUnity {
       case State::WAITING:
         {
           // check timeout
-          if (_timeout != Timeout::NO_TIMEOUT) {
-            if (_millis() - _started > static_cast<unsigned long>(_timeout)) {
-              printf("_started: %lu\n", _started);
-              printf("millis(): %lu\n", _millis());
-              printf("millis() - _started: %lu\n", _millis() - _started);
-              printf("_timeout: %ld\n", _timeout);
+          if (Globals::timeout.timeout != Timeout::NO_TIMEOUT) {
+            if (_millis() - _started > static_cast<unsigned long>(Globals::timeout.timeout)) {
               _entries->timedOut = true;
               _state = State::DONE;
               error = &Globals::timeoutError;

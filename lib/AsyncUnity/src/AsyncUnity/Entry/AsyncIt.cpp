@@ -20,19 +20,21 @@ namespace AsyncUnity {
       return Globals::asyncItMemPool.free(this);
     }
 
-    void AsyncIt::run(f_done done) {
+    void AsyncIt::run(Entry::f_done done) {
       Globals::timeout.label = _should;
       Globals::timeout.line = _line;
       Globals::timeout.timeout = Globals::depth.getTimeout(_timeout);
-      _it([&](const char * field, const int line, f_testCallback cb) {
+      _it([=]() {
+        // don't let tests use done to report an error
+        done(nullptr);
+      }, [&](const char * field, const int line, f_testCallback cb) {
         const char * label = Globals::depth.getLabel(_should, field);
         // we do this as the UnityTestFunction type
         // does not allow us to bind any context so
         // we effectively pass it through a global
-        Globals::done = done;
         Globals::asyncTestCallback = cb;
         UnityDefaultTestRun([]() {
-            Globals::asyncTestCallback(Globals::done);
+            Globals::asyncTestCallback();
         }, label, line);
       });
     }

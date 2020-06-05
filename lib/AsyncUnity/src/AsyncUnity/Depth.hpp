@@ -8,7 +8,7 @@
 
 namespace AsyncUnity {
 
-  template <size_t MAX_DEPTH, size_t LABEL_BUFFER_SIZE, unsigned long DEFAULT_TIMEOUT>
+  template <size_t MAX_DEPTH, size_t LABEL_BUFFER_SIZE, long DEFAULT_TIMEOUT>
   class Depth {
     
     public:
@@ -50,10 +50,13 @@ namespace AsyncUnity {
           // timeout has been overriden
           return timeout;
         }
-        unsigned long ret = DEFAULT_TIMEOUT;
+        long ret = DEFAULT_TIMEOUT;
         for (int i = 0; i < _current; i++) {
           // only apply next timeout if it is an override
-          ret = _frames[i].timeout || ret;
+          const long t = _frames[i].timeout;
+          if (0 != t) {
+            ret = t;
+          }
         }
         return ret;
       }
