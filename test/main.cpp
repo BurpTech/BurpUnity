@@ -15,8 +15,8 @@
   // });
 // });
 
-AsyncUnity::Root asyncUnityRoot(__FILE__, 256, "my module", [](AsyncUnity::Describe * asyncUnityEntry) {
-  asyncUnityEntry->describe("my thing", [](AsyncUnity::Describe * asyncUnityEntry) {
+AsyncUnity::Root asyncUnityRoot(__FILE__, "my module", __LINE__, [](AsyncUnity::Entry::Describe * asyncUnityEntry) {
+  asyncUnityEntry->describe("my thing", __LINE__, [](AsyncUnity::Entry::Describe * asyncUnityEntry) {
     asyncUnityEntry->it("should fail", __LINE__, []() {
       TEST_ASSERT_TRUE(false);
     });
