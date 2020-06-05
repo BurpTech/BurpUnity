@@ -13,7 +13,7 @@ namespace AsyncUnity {
     
     public:
 
-      size_t highUsed = 0;
+      unsigned long highUsed = 0;
 
       const Error * push(const char * label, const long timeout) {
         if (MAX_DEPTH == _current) {

@@ -43,8 +43,14 @@ int main()
   }
 
   // Print the actual memory usage for tuning
-  char buffer[100];
-  AsyncUnity::Globals::snprintMemory(buffer, 100);
+  size_t size = 256;
+  char buffer[size];
+  puts("");
+  puts("AsyncUnity: Build flags:\n");
+  AsyncUnity::Globals::snprintFlags(buffer, size);
+  puts(buffer);
+  puts("AsyncUnity: Actual memory usage:\n");
+  AsyncUnity::Globals::snprintMemory(buffer, size);
   puts(buffer);
 
   return root.status;

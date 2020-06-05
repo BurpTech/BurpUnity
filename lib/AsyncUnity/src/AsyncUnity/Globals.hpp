@@ -8,6 +8,7 @@
 namespace AsyncUnity {
   namespace Globals {
 
+    int snprintFlags(char * buffer, size_t size);
     int snprintMemory(char * buffer, size_t size);
 
   }

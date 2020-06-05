@@ -12,7 +12,7 @@ namespace AsyncUnity {
     public:
 
       const Error * error;
-      size_t highUsed = 0;
+      unsigned long highUsed = 0;
 
       void * alloc() {
         if (_currentUsed == SIZE) {
@@ -39,35 +39,19 @@ namespace AsyncUnity {
 
 #if ASYNC_UNITY_SAFE_MEM_POOLS
 
+        // check that the address has been allocated.
+        if (!(
+          address >= &(_pool) &&
+          address < &(_pool) + (_currentUsed * sizeof(T))
+        )) {
+          return &Globals::notAllocError;
+        }
+
         // check that the address has not already been freed
         for (int i = 0; i < _currentFree; i++) {
           if (address == _free[i]) {
             return &Globals::freedAddressError;
           }
-        }
-
-        // check that the address has been allocated.
-        //
-        // TODO: I'm sure this can be optimized to check if the
-        // address falls in the range allocated to the array (up
-        // to but not including the _currentUsed entry).
-        // Maybe something like:
-        //
-        //  address >= &(_pool) &&
-        //  address < &(_pool) + (_currentUsed * sizeof(T))
-        // 
-        // But I'm not sure the pointer arithmentic is allowed
-        // or if it's portable.
-        //
-        bool used = false;
-        for (int i = _currentUsed - 1; i >= 0; i++) {
-          if (address == &(_pool[i])) {
-            used = true;
-            break;
-          }
-        }
-        if (!used) {
-          return &Globals::notAllocError;
         }
 
 #endif
