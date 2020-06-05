@@ -2,20 +2,18 @@
 #include <Arduino.h>
 #endif
 
-#include <AsyncUnity.hpp>
-#include <AsyncUnity/Globals.hpp>
-
+#include <BddUnity.hpp>
 #include <MyLib.hpp>
 
 MyLib myLib;
 
-Module module("MyLib", [](Describe & module) {
+Module module("MyLib", [](Describe & describe) {
 
-  module.it("should fail", []() {
+  describe.it("should fail", []() {
     TEST_ASSERT_TRUE(false);
   });
 
-  module.async("callMeNextLoop", [](Async & async, f_done & done) {
+  describe.async("callMeNextLoop", [](Async & async, f_done & done) {
     myLib.callMeNextLoop(100, [&](int value) {
       async.it("should pass", [&]() {
         TEST_ASSERT_EQUAL(100, value);
@@ -33,7 +31,7 @@ Module module("MyLib", [](Describe & module) {
     });
   });
 
-  module.it("should pass", []() {
+  describe.it("should pass", []() {
     TEST_ASSERT_TRUE(true);
   });
 

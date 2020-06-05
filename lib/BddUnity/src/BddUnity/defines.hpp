@@ -1,0 +1,37 @@
+#pragma once
+
+#ifndef BDD_UNITY_PRINT_REPORT
+#define BDD_UNITY_PRINT_REPORT 0
+#endif
+
+#ifndef BDD_UNITY_SHORT_NAMES
+#define BDD_UNITY_SHORT_NAMES 1
+#endif
+
+#ifndef BDD_UNITY_SAFE_MEM_POOLS
+#define BDD_UNITY_SAFE_MEM_POOLS 0
+#endif
+
+#ifndef BDD_UNITY_MAX_DEPTH
+#define BDD_UNITY_MAX_DEPTH 10
+#endif
+
+#ifndef BDD_UNITY_LABEL_BUFFER_SIZE
+#define BDD_UNITY_LABEL_BUFFER_SIZE 256
+#endif
+
+#ifndef BDD_UNITY_DEFAULT_TIMEOUT
+#define BDD_UNITY_DEFAULT_TIMEOUT 2000
+#endif
+
+#ifndef BDD_UNITY_MAX_DESCRIBES
+#define BDD_UNITY_MAX_DESCRIBES 20
+#endif
+
+#ifndef BDD_UNITY_MAX_ITS
+#define BDD_UNITY_MAX_ITS 20
+#endif
+
+#ifndef BDD_UNITY_MAX_ASYNC_ITS
+#define BDD_UNITY_MAX_ASYNC_ITS 20
+#endif
