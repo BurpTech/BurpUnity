@@ -22,6 +22,7 @@ namespace AsyncUnity {
       case Code::NOT_ALLOC:
         return "releasing allocation that was not allocated yet";
     }
+    return nullptr;
   }
 
 }

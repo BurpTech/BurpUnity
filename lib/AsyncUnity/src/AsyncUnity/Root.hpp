@@ -39,6 +39,7 @@ namespace AsyncUnity {
       unsigned long _started = 0;
 
       void _end();
+      unsigned long _millis();
 
   };
 

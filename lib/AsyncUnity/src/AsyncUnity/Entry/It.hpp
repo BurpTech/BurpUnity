@@ -10,9 +10,11 @@ namespace AsyncUnity {
 
       public:
 
+        using f_testCallback = std::function<void()>;
+
         static const Error * error;
 
-        static It * create(const char * should, const int line, const UnityTestFunction it);
+        static It * create(const char * should, const int line, const f_testCallback it);
         const Error * free() override;
         void run(f_done done) override;
 
@@ -20,9 +22,9 @@ namespace AsyncUnity {
 
         const char * _should;
         const int _line;
-        const UnityTestFunction _it;
+        const f_testCallback _it;
 
-        It(const char * should, const int line, const UnityTestFunction it);
+        It(const char * should, const int line, const f_testCallback it);
 
     };
 

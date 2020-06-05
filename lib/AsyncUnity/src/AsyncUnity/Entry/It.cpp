@@ -6,7 +6,7 @@ namespace AsyncUnity {
 
     const Error * It::error = nullptr;
 
-    It * It::create(const char * should, const int line, const UnityTestFunction it) {
+    It * It::create(const char * should, const int line, const f_testCallback it) {
       void * address = Globals::itMemPool.alloc();
       if (address) {
         return new(address) It(should, line, it);
@@ -22,12 +22,18 @@ namespace AsyncUnity {
     void It::run(f_done done) {
       Globals::timeout.timeout = Timeout::NO_TIMEOUT;
       const char * label = Globals::depth.getLabel(_should);
-      UnityDefaultTestRun(_it, label, _line);
+      // we do this as the UnityTestFunction type
+      // does not allow us to bind any context so
+      // we effectively pass it through a global
+      Globals::testCallback = _it;
+      UnityDefaultTestRun([]() {
+          Globals::testCallback();
+      }, label, _line);
       done(nullptr);
       return;
     }
 
-    It::It(const char * should, const int line, const UnityTestFunction it) :
+    It::It(const char * should, const int line, const f_testCallback it) :
       _should(should),
       _line(line),
       _it(it) {}

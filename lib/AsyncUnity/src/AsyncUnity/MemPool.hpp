@@ -42,7 +42,7 @@ namespace AsyncUnity {
         // check that the address has not already been freed
         for (int i = 0; i < _currentFree; i++) {
           if (address == _free[i]) {
-            return &freedAddressError;
+            return &Globals::freedAddressError;
           }
         }
 

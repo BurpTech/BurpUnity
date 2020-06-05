@@ -1,10 +1,10 @@
 #include "./Root.hpp"
 
+#include <chrono>
 #include <unity.h>
 #include "./Globals.hpp"
-#include "./platform.hpp"
+// #include "./platform.hpp"
 #include "Globals/TestParams.hpp"
-#include "Globals/Timeout.hpp"
 
 namespace AsyncUnity {
 
@@ -30,7 +30,7 @@ namespace AsyncUnity {
           Entry::Entry * entry = _entries;
           if (entry) {
             _state = State::WAITING;
-            _started = millis();
+            _started = _millis();
             entry->run([&](const Error * error = nullptr) {
               if (!entry->timedOut) {
                 _state = State::DONE;
@@ -46,7 +46,11 @@ namespace AsyncUnity {
         {
           // check timeout
           if (_timeout != Timeout::NO_TIMEOUT) {
-            if (millis() - _started > _timeout) {
+            if (_millis() - _started > static_cast<unsigned long>(_timeout)) {
+              printf("_started: %lu\n", _started);
+              printf("millis(): %lu\n", _millis());
+              printf("millis() - _started: %lu\n", _millis() - _started);
+              printf("_timeout: %ld\n", _timeout);
               _entries->timedOut = true;
               _state = State::DONE;
               error = &Globals::timeoutError;
@@ -95,6 +99,10 @@ namespace AsyncUnity {
   void Root::_end() {
     status = UnityEnd();
     _state = State::FINISHED;
+  }
+
+  unsigned long Root::_millis() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
   }
 
 }

@@ -10,8 +10,9 @@ namespace AsyncUnity {
 
       public:
 
-        using f_test = std::function<void(const char * label, const int line, UnityTestFunction cb)>;
-        using f_async = std::function<void(f_done done, f_test test)>;
+        using f_testCallback = std::function<void(f_done done)>;
+        using f_test = std::function<void(const char * label, const int line, f_testCallback cb)>;
+        using f_async = std::function<void(f_test test)>;
 
         static const Error * error;
 

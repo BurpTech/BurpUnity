@@ -51,7 +51,7 @@ namespace AsyncUnity {
       }
     }
 
-    void Describe::it(const char * should, const int line, const UnityTestFunction it) {
+    void Describe::it(const char * should, const int line, const It::f_testCallback it) {
       It * entry = It::create(should, line, it);
       if (entry) {
         _append(entry);
@@ -71,7 +71,7 @@ namespace AsyncUnity {
       }
 
       // collect the new entries
-      _describe(this);
+      _describe(*this);
 
       // check for error (eg: from MemPool allocation)
       if (_error) {

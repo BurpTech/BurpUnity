@@ -14,6 +14,5 @@ namespace AsyncUnity {
     extern MemPool<Entry::Pop, ASYNC_UNITY_MAX_DEPTH> popMemPool;
     extern MemPool<Entry::It, ASYNC_UNITY_MAX_ITS> itMemPool;
     extern MemPool<Entry::AsyncIt, ASYNC_UNITY_MAX_ASYNC_ITS> asyncItMemPool;
-
   }
 }

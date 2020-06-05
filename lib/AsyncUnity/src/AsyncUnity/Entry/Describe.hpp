@@ -5,6 +5,7 @@
 #include "../Error.hpp"
 #include "./Entry.hpp"
 #include "../Timeout.hpp"
+#include "./It.hpp"
 #include "./AsyncIt.hpp"
 
 namespace AsyncUnity {
@@ -14,7 +15,7 @@ namespace AsyncUnity {
 
       public:
 
-        using f_describe = std::function<void(Describe * entry)>;
+        using f_describe = std::function<void(Describe & describe)>;
 
         static const Error * error;
 
@@ -23,7 +24,7 @@ namespace AsyncUnity {
         const Error * free() override;
         void describe(const char * thing, const int line, const f_describe describe, const long timeout = Timeout::INHERIT_TIMEOUT);
         void it(const char * should, const int line, const AsyncIt::f_async it, const long timeout = Timeout::INHERIT_TIMEOUT);
-        void it(const char * should, const int line, const UnityTestFunction it);
+        void it(const char * should, const int line, const It::f_testCallback it);
         void run(f_done done) override;
 
       private:

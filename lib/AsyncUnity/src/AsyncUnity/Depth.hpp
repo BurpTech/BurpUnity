@@ -2,6 +2,7 @@
 
 #include <unity.h>
 #include <memory>
+#include <stdio.h>
 #include "./Globals/Error.hpp"
 #include "./Timeout.hpp"
 
@@ -12,11 +13,14 @@ namespace AsyncUnity {
     
     public:
 
+      size_t highUsed = 0;
+
       const Error * push(const char * label, const long timeout) {
         if (MAX_DEPTH == _current) {
           return &Globals::maxDepthError;
         }
         new(&(_frames[_current++])) Frame(label, timeout);
+        highUsed = _current > highUsed ? _current : highUsed;
         return nullptr;
       }
 
@@ -61,8 +65,8 @@ namespace AsyncUnity {
           label(label),
           timeout(timeout)
         {}
-        const char * label = nullptr;
-        const long timeout = Timeout::INHERIT_TIMEOUT;
+        const char * label;
+        const long timeout;
       };
 
       std::allocator<Frame> allocator;

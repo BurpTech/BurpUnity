@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef ASYNC_UNITY_SHORT_NAMES
+#define ASYNC_UNITY_SHORT_NAMES 1
+#endif
+
 #ifndef ASYNC_UNITY_SAFE_MEM_POOL
 #define ASYNC_UNITY_SAFE_MEM_POOLS 0
 #endif
