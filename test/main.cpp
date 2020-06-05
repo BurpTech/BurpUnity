@@ -19,14 +19,8 @@ Root root(__FILE__, "MyLib", __LINE__, [](Describe & describe) {
     TEST_ASSERT_TRUE(true);
   });
 
-  describe.it("should call me with value", __LINE__, [](f_done done, f_test test) {
-    // need to capture using [=] here because
-    // when we get the callback the done function
-    // will have been removed from the stack as
-    // this is asynchronous
-    myLib.callMeNextLoop(100, [=](int value) {
-      // this test callback, however, is synchronous
-      // so [&] can be used again
+  describe.it("should call me with value", __LINE__, [](f_done & done, f_test & test) {
+    myLib.callMeNextLoop(100, [&](int value) {
       test("sub test 1", __LINE__, [&]() {
         TEST_ASSERT_EQUAL(100, value);
       });

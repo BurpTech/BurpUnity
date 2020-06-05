@@ -13,7 +13,7 @@ namespace AsyncUnity {
         using f_done = std::function<void()>;
         using f_testCallback = std::function<void()>;
         using f_test = std::function<void(const char * label, const int line, f_testCallback cb)>;
-        using f_async = std::function<void(f_done done, f_test test)>;
+        using f_async = std::function<void(f_done & done, f_test & test)>;
 
         static const Error * error;
 

@@ -8,6 +8,8 @@ namespace AsyncUnity {
     Timeout timeout;
     Entry::It::f_testCallback testCallback;
     Entry::AsyncIt::f_testCallback asyncTestCallback;
+    Entry::AsyncIt::f_done asyncDone;
+    Entry::AsyncIt::f_test asyncTest;
 
   }
 }

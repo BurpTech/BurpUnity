@@ -24,10 +24,11 @@ namespace AsyncUnity {
       Globals::timeout.label = _should;
       Globals::timeout.line = _line;
       Globals::timeout.timeout = Globals::depth.getTimeout(_timeout);
-      _it([=]() {
+      Globals::asyncDone = [=]() {
         // don't let tests use done to report an error
         done(nullptr);
-      }, [&](const char * field, const int line, f_testCallback cb) {
+      };
+      Globals::asyncTest = [=](const char * field, const int line, f_testCallback cb) {
         const char * label = Globals::depth.getLabel(_should, field);
         // we do this as the UnityTestFunction type
         // does not allow us to bind any context so
@@ -36,7 +37,8 @@ namespace AsyncUnity {
         UnityDefaultTestRun([]() {
             Globals::asyncTestCallback();
         }, label, line);
-      });
+      };
+      _it(Globals::asyncDone, Globals::asyncTest);
     }
 
     AsyncIt::AsyncIt(const char * should, const int line, const f_async it, const unsigned long timeout) :
