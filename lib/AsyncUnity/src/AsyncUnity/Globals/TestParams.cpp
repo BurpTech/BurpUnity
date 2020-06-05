@@ -7,9 +7,9 @@ namespace AsyncUnity {
     const char * testMessage = nullptr;
     Timeout timeout;
     Entry::It::f_testCallback testCallback;
-    Entry::AsyncIt::f_testCallback asyncTestCallback;
+    Entry::AsyncIt::Async::f_testCallback asyncTestCallback;
     Entry::AsyncIt::f_done asyncDone;
-    Entry::AsyncIt::f_test asyncTest;
+    Entry::AsyncIt::Async async;
 
   }
 }

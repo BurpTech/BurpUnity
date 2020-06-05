@@ -21,8 +21,11 @@ namespace AsyncUnity {
         static Describe * create(const char * thing, const int line, const f_describe describe, unsigned long timeout);
 
         const Error * free() override;
+        void describe(const char * thing, const f_describe describe, const long timeout = Timeout::INHERIT_TIMEOUT);
         void describe(const char * thing, const int line, const f_describe describe, const long timeout = Timeout::INHERIT_TIMEOUT);
-        void it(const char * should, const int line, const AsyncIt::f_async it, const long timeout = Timeout::INHERIT_TIMEOUT);
+        void async(const char * should, const AsyncIt::f_async it, const long timeout = Timeout::INHERIT_TIMEOUT);
+        void async(const char * should, const int line, const AsyncIt::f_async it, const long timeout = Timeout::INHERIT_TIMEOUT);
+        void it(const char * should, const It::f_testCallback it);
         void it(const char * should, const int line, const It::f_testCallback it);
         void run(const f_done & done) override;
 

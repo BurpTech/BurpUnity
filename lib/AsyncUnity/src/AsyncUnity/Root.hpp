@@ -13,6 +13,11 @@ namespace AsyncUnity {
       int status = 0;
 
       Root(
+        const char * thing,
+        Entry::Describe::f_describe cb,
+        long timeout = Timeout::INHERIT_TIMEOUT
+      );
+      Root(
         const char * file,
         const char * thing,
         const int line,

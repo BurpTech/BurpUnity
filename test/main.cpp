@@ -9,22 +9,18 @@
 
 MyLib myLib;
 
-Root root(ROOT_NAME("MyLib"), [](Describe & describe) {
+Root root("MyLib", [](Describe & describe) {
 
-  describe.it(NAME("should fail"), []() {
+  describe.it("should fail", []() {
     TEST_ASSERT_TRUE(false);
   });
 
-  describe.it(NAME("should pass"), []() {
-    TEST_ASSERT_TRUE(true);
-  });
-
-  describe.it(NAME("should call me with value"), [](f_done & done, f_test & test) {
+  describe.async("callMeNextLoop", [](Async & async, f_done & done) {
     myLib.callMeNextLoop(100, [&](int value) {
-      test(NAME("should pass"), [&]() {
+      async.it("should pass", [&]() {
         TEST_ASSERT_EQUAL(100, value);
       });
-      test(NAME("should fail"), [&]() {
+      async.it("should fail", [&]() {
         TEST_ASSERT_EQUAL(10, value);
       });
       // signal that we are done, this
@@ -35,6 +31,10 @@ Root root(ROOT_NAME("MyLib"), [](Describe & describe) {
       // failure
       done();
     });
+  });
+
+  describe.it("should pass", []() {
+    TEST_ASSERT_TRUE(true);
   });
 
 });

@@ -12,6 +12,15 @@ namespace AsyncUnity {
   using namespace std::placeholders;
 
   Root::Root(
+    const char * thing,
+    Entry::Describe::f_describe cb,
+    long timeout
+  ) :
+    _file(thing),
+    _entries(Entry::Describe::create(thing, 0, cb, timeout))
+  {}
+
+  Root::Root(
     const char * file,
     const char * thing,
     const int line,

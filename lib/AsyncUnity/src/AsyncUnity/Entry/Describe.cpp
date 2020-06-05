@@ -29,6 +29,10 @@ namespace AsyncUnity {
       return ret;
     }
 
+    void Describe::describe(const char * thing, const f_describe describe, const long timeout) {
+      Describe::describe(thing, 0, describe, timeout);
+    }
+
     void Describe::describe(const char * thing, const int line, const f_describe describe, const long timeout) {
       Describe * entry = Describe::create(thing, line, describe, timeout);
       if (entry) {
@@ -38,13 +42,21 @@ namespace AsyncUnity {
       }
     }
 
-    void Describe::it(const char * should, const int line, const AsyncIt::f_async it, const long timeout) {
-      AsyncIt * entry = AsyncIt::create(should, line, it, timeout);
+    void Describe::async(const char * thing, const AsyncIt::f_async it, const long timeout) {
+      Describe::async(thing, 0, it, timeout);
+    }
+
+    void Describe::async(const char * thing, const int line, const AsyncIt::f_async it, const long timeout) {
+      AsyncIt * entry = AsyncIt::create(thing, line, it, timeout);
       if (entry) {
         _append(entry);
       } else {
         setError(AsyncIt::staticError);
       }
+    }
+
+    void Describe::it(const char * should, const It::f_testCallback it) {
+      Describe::it(should, 0, it);
     }
 
     void Describe::it(const char * should, const int line, const It::f_testCallback it) {
