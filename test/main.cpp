@@ -9,13 +9,13 @@
 
 MyLib myLib;
 
-Root root("MyLib", [](Describe & describe) {
+Module module("MyLib", [](Describe & module) {
 
-  describe.it("should fail", []() {
+  module.it("should fail", []() {
     TEST_ASSERT_TRUE(false);
   });
 
-  describe.async("callMeNextLoop", [](Async & async, f_done & done) {
+  module.async("callMeNextLoop", [](Async & async, f_done & done) {
     myLib.callMeNextLoop(100, [&](int value) {
       async.it("should pass", [&]() {
         TEST_ASSERT_EQUAL(100, value);
@@ -33,7 +33,7 @@ Root root("MyLib", [](Describe & describe) {
     });
   });
 
-  describe.it("should pass", []() {
+  module.it("should pass", []() {
     TEST_ASSERT_TRUE(true);
   });
 
@@ -41,24 +41,23 @@ Root root("MyLib", [](Describe & describe) {
 
 void setup()
 {
-  myLib.setup();
-  root.start();
+  module.start();
 }
 
 void loop()
 {
   myLib.loop();
-  root.loop();
+  module.loop();
 }
 
 int main()
 {
   setup();
-  while (root.isRunning())
+  while (module.isRunning())
   {
     loop();
   }
 
-  return root.status;
+  return module.status;
 }
 

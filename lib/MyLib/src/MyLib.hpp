@@ -8,9 +8,6 @@ class MyLib {
 
     using f_cb = std::function<void(int value)>;
 
-    void setup() {
-    }
-
     void loop() {
       if (_cb) {
         f_cb cb = _cb;

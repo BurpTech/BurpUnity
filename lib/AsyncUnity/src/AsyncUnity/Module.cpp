@@ -1,4 +1,4 @@
-#include "./Root.hpp"
+#include "Module.hpp"
 
 #include <chrono>
 #include <unity.h>
@@ -11,7 +11,7 @@ namespace AsyncUnity {
 
   using namespace std::placeholders;
 
-  Root::Root(
+  Module::Module(
     const char * thing,
     Entry::Describe::f_describe cb,
     long timeout
@@ -20,7 +20,7 @@ namespace AsyncUnity {
     _entries(Entry::Describe::create(thing, 0, cb, timeout))
   {}
 
-  Root::Root(
+  Module::Module(
     const char * file,
     const char * thing,
     const int line,
@@ -31,7 +31,7 @@ namespace AsyncUnity {
     _entries(Entry::Describe::create(thing, line, cb, timeout))
   {}
 
-  void Root::start() {
+  void Module::start() {
     UnityBegin(_file);
 
 #if ASYNC_UNITY_PRINT_REPORT > 0
@@ -48,7 +48,7 @@ namespace AsyncUnity {
     _next();
   }
 
-  void Root::loop() {
+  void Module::loop() {
     switch (_state) {
       case State::FINISHED:
         //do nothing
@@ -62,23 +62,23 @@ namespace AsyncUnity {
     }
   }
 
-  const bool Root::isRunning() {
+  const bool Module::isRunning() {
     return (_state != State::FINISHED);
   }
 
-  void Root::_next() {
+  void Module::_next() {
     Entry::Entry * entry = _entries;
     if (entry) {
       _started = _millis();
       _count++;
       _state = State::WAITING;
-      entry->run(std::bind(&Root::_done, this, _count, _1));
+      entry->run(std::bind(&Module::_done, this, _count, _1));
     } else {
       _end();
     }
   }
 
-  void Root::_checkTimeout() {
+  void Module::_checkTimeout() {
     if (Globals::timeout.timeout != Timeout::NO_TIMEOUT) {
       if (_millis() - _started > static_cast<unsigned long>(Globals::timeout.timeout)) {
         Error e(Error::Code::TIMEOUT, Globals::timeout.label, Globals::timeout.line);
@@ -87,7 +87,7 @@ namespace AsyncUnity {
     }
   }
 
-  void Root::_done(const unsigned long count, const Error * e) {
+  void Module::_done(const unsigned long count, const Error * e) {
     // ignore the call if no longer running or the
     // count is different to the current count.
     // This would mean that we moved on already,
@@ -123,7 +123,7 @@ namespace AsyncUnity {
     }
   }
 
-  void Root::_end() {
+  void Module::_end() {
 
 #if ASYNC_UNITY_PRINT_REPORT > 0
     // Print the actual memory usage for tuning
@@ -140,7 +140,7 @@ namespace AsyncUnity {
     status = UnityEnd();
   }
 
-  unsigned long Root::_millis() {
+  unsigned long Module::_millis() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
   }
 

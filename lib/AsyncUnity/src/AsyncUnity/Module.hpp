@@ -6,18 +6,18 @@
 
 namespace AsyncUnity {
 
-  class Root : public HasError {
+  class Module : public HasError {
     
     public:
 
       int status = 0;
 
-      Root(
+      Module(
         const char * thing,
         Entry::Describe::f_describe cb,
         long timeout = Timeout::INHERIT_TIMEOUT
       );
-      Root(
+      Module(
         const char * file,
         const char * thing,
         const int line,
