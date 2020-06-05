@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unity.h>
+#include <memory>
 #include "./Globals/Error.hpp"
 #include "./Timeout.hpp"
 
@@ -15,9 +16,7 @@ namespace AsyncUnity {
         if (MAX_DEPTH == _current) {
           return &Globals::maxDepthError;
         }
-        _frames[_current].label = label;
-        _frames[_current].timeout = timeout;
-        _current++;
+        new(&(_frames[_current++])) Frame(label, timeout);
         return nullptr;
       }
 
@@ -58,12 +57,16 @@ namespace AsyncUnity {
     private:
 
       struct Frame {
-        Frame() {}
+        Frame(const char * label, const long timeout) :
+          label(label),
+          timeout(timeout)
+        {}
         const char * label = nullptr;
-        long timeout = Timeout::INHERIT_TIMEOUT;
+        const long timeout = Timeout::INHERIT_TIMEOUT;
       };
 
-      Frame _frames[MAX_DEPTH];
+      std::allocator<Frame> allocator;
+      Frame * _frames = allocator.allocate(MAX_DEPTH);
       size_t _current = 0;
 
       // we use 2 buffers to make concatenation simpler

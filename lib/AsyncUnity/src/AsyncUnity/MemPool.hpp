@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <new>
 #include "./Globals/Error.hpp"
 
 namespace AsyncUnity {

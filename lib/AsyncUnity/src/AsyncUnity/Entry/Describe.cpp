@@ -79,7 +79,7 @@ namespace AsyncUnity {
         return;
       }
 
-      // insert a pop at the head
+      // append a pop to the entries
       Pop * pop = Pop::create();
       if (!pop) {
         // I don't think this can happen
@@ -88,8 +88,7 @@ namespace AsyncUnity {
         done(Pop::error);
         return;
       }
-      pop->next = _entries;
-      _entries = pop;
+      _append(pop);
 
       // now insert the entries as next
       // and clear the local reference
