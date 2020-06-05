@@ -2,21 +2,21 @@
 
 #include <cstddef>
 #include <memory>
-#include "./Globals/Error.hpp"
+#include "Error.hpp"
+#include "HasError.hpp"
 
 namespace AsyncUnity {
 
   template <class T, size_t SIZE>
-  class MemPool {
+  class MemPool: public HasError {
 
     public:
 
-      const Error * error;
       unsigned long highUsed = 0;
 
       void * alloc() {
         if (_currentUsed == SIZE) {
-          error = &Globals::maxAllocError;
+          setError(Error::Code::MAX_ALLOC);
           return nullptr;
         }
 
@@ -33,8 +33,8 @@ namespace AsyncUnity {
 
       const Error * free(void * address) {
         if (_currentUsed == 0) {
-          error = &Globals::minAllocError;
-          return error;
+          setError(Error::Code::MIN_ALLOC);
+          return &error;
         }
 
 #if ASYNC_UNITY_SAFE_MEM_POOLS
@@ -44,13 +44,15 @@ namespace AsyncUnity {
           address >= &(_pool) &&
           address < &(_pool) + (_currentUsed * sizeof(T))
         )) {
-          return &Globals::notAllocError;
+          setError(Error::Code::NOT_ALLOC);
+          return &error;
         }
 
         // check that the address has not already been freed
         for (int i = 0; i < _currentFree; i++) {
           if (address == _free[i]) {
-            return &Globals::freedAddressError;
+            setError(Error::Code::FREED_ADDRESS);
+            return &error;
           }
         }
 

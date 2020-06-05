@@ -1,4 +1,4 @@
-#include "./MemPool.hpp"
+#include "MemPool.hpp"
 
 namespace AsyncUnity {
   namespace Globals {

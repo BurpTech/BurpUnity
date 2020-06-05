@@ -1,5 +1,5 @@
-#include "./defines.hpp"
-#include "./Globals.hpp"
+#include "defines.hpp"
+#include "Globals.hpp"
 
 namespace AsyncUnity {
   namespace Globals {
@@ -31,18 +31,23 @@ namespace AsyncUnity {
     int snprintMemory(char * buffer, size_t size) {
 
       const char * format = 
-        "MAX_DEPTH: %lu\n"
-        "MAX_POPS (should equal MAX_DEPTH): %lu\n"
-        "MAX_DESCRIBES: %lu\n"
-        "MAX_ITS: %lu\n"
-        "MAX_ASYNC_ITS: %lu\n";
+        "maximum depth reached (ASYNC_UNITY_MAX_DEPTH): %lu (%d)\n"
+        "maximum pops allocated (ASYNC_UNITY_MAX_DEPTH): %lu (%d)\n"
+        "maximum describes allocated (ASYNC_UNITY_MAX_DESCRIBES): %lu (%d)\n"
+        "maximum its allocated (ASYNC_UNITY_MAX_ITS): %lu (%d)\n"
+        "maximum async its allocated (ASYNC_UNITY_MAX_ASYNC_ITS): %lu (%d)\n";
 
       return snprintf(buffer, size, format,
         depth.highUsed,
+        ASYNC_UNITY_MAX_DEPTH,
         describeMemPool.highUsed,
+        ASYNC_UNITY_MAX_DESCRIBES,
         popMemPool.highUsed,
+        ASYNC_UNITY_MAX_DEPTH,
         itMemPool.highUsed,
-        asyncItMemPool.highUsed);
+        ASYNC_UNITY_MAX_ITS,
+        asyncItMemPool.highUsed,
+        ASYNC_UNITY_MAX_ASYNC_ITS);
 
     }
 

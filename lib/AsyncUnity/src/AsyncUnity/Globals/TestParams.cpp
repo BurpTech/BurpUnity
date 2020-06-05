@@ -1,4 +1,4 @@
-#include "./TestParams.hpp"
+#include "TestParams.hpp"
 
 namespace AsyncUnity {
   namespace Globals {

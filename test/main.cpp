@@ -9,24 +9,27 @@
 
 MyLib myLib;
 
-Root root(__FILE__, "MyLib", __LINE__, [](Describe & describe) {
+Root root(ROOT_NAME("MyLib"), [](Describe & describe) {
 
-  describe.it("should fail", __LINE__, []() {
+  describe.it(NAME("should fail"), []() {
     TEST_ASSERT_TRUE(false);
   });
 
-  describe.it("should pass", __LINE__, []() {
+  describe.it(NAME("should pass"), []() {
     TEST_ASSERT_TRUE(true);
   });
 
-  describe.it("should call me with value", __LINE__, [](f_done & done, f_test & test) {
+  describe.it(NAME("should call me with value"), [](f_done & done, f_test & test) {
     myLib.callMeNextLoop(100, [&](int value) {
-      test("sub test 1", __LINE__, [&]() {
+      test(NAME("should pass"), [&]() {
         TEST_ASSERT_EQUAL(100, value);
+      });
+      test(NAME("should fail"), [&]() {
+        TEST_ASSERT_EQUAL(10, value);
       });
       // signal that we are done, this
       // should not be done in a function
-      // that asserts as the assert will
+      // that asserts as the assert may
       // exit that function before it gets
       // there and thus cause a timeout
       // failure
@@ -39,7 +42,7 @@ Root root(__FILE__, "MyLib", __LINE__, [](Describe & describe) {
 void setup()
 {
   myLib.setup();
-  root.setup();
+  root.start();
 }
 
 void loop()
@@ -55,17 +58,6 @@ int main()
   {
     loop();
   }
-
-  // Print the actual memory usage for tuning
-  size_t size = 256;
-  char buffer[size];
-  puts("");
-  puts("AsyncUnity: Build flags:\n");
-  AsyncUnity::Globals::snprintFlags(buffer, size);
-  puts(buffer);
-  puts("AsyncUnity: Actual memory usage:\n");
-  AsyncUnity::Globals::snprintMemory(buffer, size);
-  puts(buffer);
 
   return root.status;
 }

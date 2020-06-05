@@ -1,20 +1,18 @@
-#include "./Describe.hpp"
 #include "../Globals.hpp"
-#include "./AsyncIt.hpp"
-#include "./It.hpp"
-#include "./Pop.hpp"
+#include "Describe.hpp"
+#include "AsyncIt.hpp"
+#include "It.hpp"
+#include "Pop.hpp"
 
 namespace AsyncUnity {
   namespace Entry {
-
-    const Error * Describe::error = nullptr;
 
     Describe * Describe::create(const char * thing, const int line, const f_describe describe, unsigned long timeout) {
       void * address = Globals::describeMemPool.alloc();
       if (address) {
         return new(address) Describe(thing, line, describe, timeout);
       }
-      error = Globals::describeMemPool.error;
+      setStaticError(Globals::describeMemPool.error, thing, line);
       return nullptr;
     }
 
@@ -36,8 +34,7 @@ namespace AsyncUnity {
       if (entry) {
         _append(entry);
       } else {
-        _error = Describe::error;
-        _reportError(thing, line);
+        setError(Describe::staticError);
       }
     }
 
@@ -46,8 +43,7 @@ namespace AsyncUnity {
       if (entry) {
         _append(entry);
       } else {
-        _error = AsyncIt::error;
-        _reportError(should, line);
+        setError(AsyncIt::staticError);
       }
     }
 
@@ -56,17 +52,17 @@ namespace AsyncUnity {
       if (entry) {
         _append(entry);
       } else {
-        _error = It::error;
-        _reportError(should, line);
+        setError(It::staticError);
       }
     }
 
-    void Describe::run(f_done done) {
+    void Describe::run(const f_done & done) {
       Globals::timeout.timeout = Timeout::NO_TIMEOUT;
       const Error * e = Globals::depth.push(_thing, _timeout);
       if (e) {
         // failed to increase the depth
-        done(e);
+        setError(*e, _thing, _line);
+        done(&error);
         return;
       }
 
@@ -74,8 +70,8 @@ namespace AsyncUnity {
       _describe(*this);
 
       // check for error (eg: from MemPool allocation)
-      if (_error) {
-        done(_error);
+      if (hasError) {
+        done(&error);
         return;
       }
 
@@ -84,8 +80,8 @@ namespace AsyncUnity {
       if (!pop) {
         // I don't think this can happen
         // as the depth would be exceeded first
-        _reportError("pop depth", _line);
-        done(Pop::error);
+        setError(Pop::staticError, _thing, _line);
+        done(&error);
         return;
       }
       _append(pop);
@@ -118,15 +114,6 @@ namespace AsyncUnity {
         _entries = entry;
       }
       _entriesTail = entry;
-    }
-
-    void Describe::_reportError(const char * field, const int line) {
-      const char * label = Globals::depth.getLabel(field);
-      Globals::testMessage = _error->c_str();
-      Globals::testLine = line;
-      UnityDefaultTestRun([]() {
-        UNITY_TEST_FAIL(Globals::testLine, Globals::testMessage);
-      }, label, line);
     }
 
   }

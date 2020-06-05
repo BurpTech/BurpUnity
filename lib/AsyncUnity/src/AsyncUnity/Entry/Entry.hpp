@@ -2,11 +2,12 @@
 
 #include <functional>
 #include "../Error.hpp"
+#include "../HasStaticError.hpp"
 
 namespace AsyncUnity {
   namespace Entry {
 
-    class Entry {
+    class Entry : public HasStaticError {
 
       public:
 
@@ -19,7 +20,7 @@ namespace AsyncUnity {
         // The global timeout structure should be populated with 
         // the timeout parameters, for the purposes of creating
         // a timeout error
-        virtual void run(f_done done) = 0;
+        virtual void run(const f_done & done) = 0;
 
         virtual const Error * free() = 0;
     };

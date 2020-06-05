@@ -1,4 +1,4 @@
-#include "./Depth.hpp"
+#include "Depth.hpp"
 
 namespace AsyncUnity {
   namespace Globals {

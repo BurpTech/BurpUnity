@@ -3,13 +3,13 @@
 #include <unity.h>
 #include <memory>
 #include <stdio.h>
-#include "./Globals/Error.hpp"
-#include "./Timeout.hpp"
+#include "Timeout.hpp"
+#include "HasError.hpp"
 
 namespace AsyncUnity {
 
   template <size_t MAX_DEPTH, size_t LABEL_BUFFER_SIZE, long DEFAULT_TIMEOUT>
-  class Depth {
+  class Depth : public HasError {
     
     public:
 
@@ -17,7 +17,8 @@ namespace AsyncUnity {
 
       const Error * push(const char * label, const long timeout) {
         if (MAX_DEPTH == _current) {
-          return &Globals::maxDepthError;
+          setError(Error::Code::MAX_DEPTH);
+          return &error;
         }
         new(&(_frames[_current++])) Frame(label, timeout);
         highUsed = _current > highUsed ? _current : highUsed;
@@ -26,7 +27,8 @@ namespace AsyncUnity {
 
       const Error * pop() {
         if (0 == _current) {
-          return &Globals::minDepthError;
+          setError(Error::Code::MIN_DEPTH);
+          return &error;
         }
         _current--;
         return nullptr;

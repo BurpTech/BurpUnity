@@ -1,17 +1,15 @@
-#include "./It.hpp"
 #include "../Globals.hpp"
+#include "It.hpp"
 
 namespace AsyncUnity {
   namespace Entry {
-
-    const Error * It::error = nullptr;
 
     It * It::create(const char * should, const int line, const f_testCallback it) {
       void * address = Globals::itMemPool.alloc();
       if (address) {
         return new(address) It(should, line, it);
       }
-      error = Globals::itMemPool.error;
+      setStaticError(Globals::itMemPool.error, should, line);
       return nullptr;
     }
 
@@ -19,7 +17,7 @@ namespace AsyncUnity {
       return Globals::itMemPool.free(this);
     }
 
-    void It::run(f_done done) {
+    void It::run(const f_done & done) {
       Globals::timeout.timeout = Timeout::NO_TIMEOUT;
       const char * label = Globals::depth.getLabel(_should);
       // we do this as the UnityTestFunction type

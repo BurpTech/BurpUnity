@@ -1,18 +1,16 @@
 #include <unity.h>
-#include "./AsyncIt.hpp"
 #include "../Globals.hpp"
+#include "AsyncIt.hpp"
 
 namespace AsyncUnity {
   namespace Entry {
-
-    const Error * AsyncIt::error = nullptr;
 
     AsyncIt * AsyncIt::create(const char * should, const int line, const f_async it, const long timeout) {
       void * address = Globals::asyncItMemPool.alloc();
       if (address) {
         return new(address) AsyncIt(should, line, it, timeout);
       }
-      error = Globals::asyncItMemPool.error;
+      setStaticError(Globals::asyncItMemPool.error, should, line);
       return nullptr;
     }
 
@@ -20,15 +18,19 @@ namespace AsyncUnity {
       return Globals::asyncItMemPool.free(this);
     }
 
-    void AsyncIt::run(Entry::f_done done) {
+    void AsyncIt::run(const Entry::f_done & done) {
       Globals::timeout.label = _should;
       Globals::timeout.line = _line;
       Globals::timeout.timeout = Globals::depth.getTimeout(_timeout);
+      // use [=] in asyncDone lambda to make a copy of the
+      // synchronous done function as it will go out of scope
+      // by the next loop, the function it points to will still
+      // be there though so that's ok (it is a std::bind on Root::_done)
       Globals::asyncDone = [=]() {
         // don't let tests use done to report an error
         done(nullptr);
       };
-      Globals::asyncTest = [=](const char * field, const int line, f_testCallback cb) {
+      Globals::asyncTest = [&](const char * field, const int line, f_testCallback cb) {
         const char * label = Globals::depth.getLabel(_should, field);
         // we do this as the UnityTestFunction type
         // does not allow us to bind any context so

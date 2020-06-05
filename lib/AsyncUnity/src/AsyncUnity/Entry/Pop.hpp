@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./Entry.hpp"
+#include "Entry.hpp"
 
 namespace AsyncUnity {
   namespace Entry {
@@ -9,11 +9,9 @@ namespace AsyncUnity {
 
       public:
 
-        static const Error * error;
-
         static Pop * create();
         const Error * free() override;
-        void run(f_done done) override;
+        void run(const f_done & done) override;
 
     };
 

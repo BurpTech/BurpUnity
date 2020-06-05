@@ -7,6 +7,7 @@ namespace AsyncUnity {
     public:
 
       enum class Code {
+        NO_ERROR,
         TIMEOUT,
         MAX_DEPTH,
         MIN_DEPTH,
@@ -16,9 +17,16 @@ namespace AsyncUnity {
         NOT_ALLOC
       };
 
-      const Code code;
+      Code code;
+      const char * label;
+      int line;
 
-      Error(Error::Code code);
+      Error(const Code code, const char * label, const int line);
+      Error(const Code code);
+      Error(const Error & error, const char * label, const int line);
+      Error(const Error & error);
+      Error();
+
       const char * c_str() const;
 
   };

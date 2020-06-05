@@ -1,15 +1,15 @@
 #pragma once
 
-#include "./Entry/Describe.hpp"
+#include "Entry/Describe.hpp"
 #include "Timeout.hpp"
+#include "HasError.hpp"
 
 namespace AsyncUnity {
 
-  class Root {
+  class Root : public HasError {
     
     public:
 
-      const Error * error = nullptr;
       int status = 0;
 
       Root(
@@ -19,25 +19,28 @@ namespace AsyncUnity {
         Entry::Describe::f_describe cb,
         long timeout = Timeout::INHERIT_TIMEOUT
       );
-      void setup();
+      void start();
       void loop();
-      bool isRunning();
+      const bool isRunning();
 
     private:
 
       enum class State {
-        NEXT,
+        READY,
         WAITING,
-        DONE,
         FINISHED
       };
 
       const char * _file;
       Entry::Entry * _entries;
-      State _state = State::NEXT;
+      State _state = State::READY;
+      unsigned long _count = 0;
       long _timeout = 0;
       unsigned long _started = 0;
 
+      void _next();
+      void _checkTimeout();
+      void _done(const unsigned long count, const Error * e);
       void _end();
       unsigned long _millis();
 
