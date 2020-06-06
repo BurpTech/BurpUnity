@@ -6,28 +6,30 @@
 #include "../Context/HasContext.hpp"
 
 namespace BddUnity {
+
+  class Module;
+
   namespace Entry {
 
     class Interface : public HasStaticError, public Context::HasContext {
 
+      friend class BddUnity::Module;
+      friend class Describe;
+
       public:
 
-        bool timedOut = false;
-
         using f_done = std::function<void(const Error * error)>;
-
-        Interface * next = nullptr;
-
-        // The global timeout structure should be populated with 
-        // the timeout parameters, for the purposes of creating
-        // a timeout error
-        virtual void run(Timeout & timeout, const f_done & done) = 0;
-
-        virtual const Error * free() = 0;
 
       protected:
 
         Interface(Context::Interface & context);
+
+      private:
+
+        Interface * next = nullptr;
+        
+        virtual void run(Timeout & timeout, const f_done & done) = 0;
+        virtual const Error * free() = 0;
 
     };
 
