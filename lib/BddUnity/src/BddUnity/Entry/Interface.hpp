@@ -1,13 +1,14 @@
 #pragma once
 
 #include <functional>
-#include "../Error.hpp"
+#include "../Timeout.hpp"
 #include "../HasStaticError.hpp"
+#include "../Context/HasContext.hpp"
 
 namespace BddUnity {
   namespace Entry {
 
-    class Entry : public HasStaticError {
+    class Interface : public HasStaticError, public Context::HasContext {
 
       public:
 
@@ -15,14 +16,19 @@ namespace BddUnity {
 
         using f_done = std::function<void(const Error * error)>;
 
-        Entry * next = nullptr;
+        Interface * next = nullptr;
 
         // The global timeout structure should be populated with 
         // the timeout parameters, for the purposes of creating
         // a timeout error
-        virtual void run(const f_done & done) = 0;
+        virtual void run(Timeout & timeout, const f_done & done) = 0;
 
         virtual const Error * free() = 0;
+
+      protected:
+
+        Interface(Context::Interface & context);
+
     };
 
   }

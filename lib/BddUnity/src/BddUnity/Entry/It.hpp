@@ -1,20 +1,19 @@
 #pragma once
 
-#include <unity.h>
-#include "Entry.hpp"
+#include "Interface.hpp"
 
 namespace BddUnity {
   namespace Entry {
 
-    class It : public Entry {
+    class It : public Interface {
 
       public:
 
         using f_testCallback = std::function<void()>;
 
-        static It * create(const char * should, const int line, const f_testCallback it);
+        static It * create(Context::Interface & context, const char * should, const int line, const f_testCallback it);
         const Error * free() override;
-        void run(const f_done & done) override;
+        void run(Timeout & timeout, const f_done & done) override;
 
       private:
 
@@ -22,7 +21,7 @@ namespace BddUnity {
         const int _line;
         const f_testCallback _it;
 
-        It(const char * should, const int line, const f_testCallback it);
+        It(Context::Interface & context, const char * should, const int line, const f_testCallback it);
 
     };
 

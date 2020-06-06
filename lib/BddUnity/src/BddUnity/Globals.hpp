@@ -1,14 +1,17 @@
 #pragma once
 
-#include "Globals/Depth.hpp"
-#include "Globals/MemPool.hpp"
-#include "Globals/TestParams.hpp"
+#include "Entry/It.hpp"
+#include "Entry/AsyncIt.hpp"
 
 namespace BddUnity {
   namespace Globals {
 
-    int snprintFlags(char * buffer, size_t size);
-    int snprintMemory(char * buffer, size_t size);
+    extern int errorLine;
+    extern const char * errorMessage;
+    extern Entry::It::f_testCallback testCallback;
+    extern Entry::AsyncIt::Async::f_testCallback asyncTestCallback;
+    extern Entry::AsyncIt::f_done asyncDone;
+    extern Entry::AsyncIt::Async * async;
 
   }
 }

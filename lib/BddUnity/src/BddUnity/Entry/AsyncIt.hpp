@@ -1,23 +1,23 @@
 #pragma once
 
 #include <unity.h>
-#include "Entry.hpp"
+#include "Interface.hpp"
 
 namespace BddUnity {
   namespace Entry {
 
-    class AsyncIt : public Entry {
+    class AsyncIt : public Interface {
 
       public:
 
-        class Async {
+        class Async : public Context::HasContext {
 
           public:
 
             using f_testCallback = std::function<void()>;
 
             Async();
-            Async(const char * thing);
+            Async(Context::Interface & context, const char * thing);
             void it(const char * should, const f_testCallback it);
             void it(const char * should, const int line, const f_testCallback it);
 
@@ -30,10 +30,10 @@ namespace BddUnity {
         using f_done = std::function<void()>;
         using f_async = std::function<void(Async & async, f_done & done)>;
 
-        static AsyncIt * create(const char * should, const int line, const f_async it, const long timeout);
+        static AsyncIt * create(Context::Interface & context, const char * should, const int line, const f_async it, const long timeout);
 
         const Error * free() override;
-        void run(const Entry::f_done & done) override;
+        void run(Timeout & timeout, const Interface::f_done & done) override;
 
       private:
 
@@ -42,7 +42,7 @@ namespace BddUnity {
         const f_async _it;
         const unsigned long _timeout;
 
-        AsyncIt(const char * thing, const int line, const f_async it, const unsigned long out);
+        AsyncIt(Context::Interface & context, const char * thing, const int line, const f_async it, const unsigned long out);
 
     };
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Context/Interface.hpp"
+#include "Entry/Interface.hpp"
 #include "Entry/Describe.hpp"
 #include "Timeout.hpp"
 #include "HasError.hpp"
@@ -11,17 +13,18 @@ namespace BddUnity {
     public:
 
       Module(
+        Context::Interface & context,
         const char * thing,
         Entry::Describe::f_describe cb,
         long timeout = Timeout::INHERIT_TIMEOUT
       );
       Module(
+        Context::Interface & context,
         const char * thing,
         const int line,
         Entry::Describe::f_describe cb,
         long timeout = Timeout::INHERIT_TIMEOUT
       );
-      void start();
       void loop();
       const bool isRunning();
 
@@ -33,10 +36,11 @@ namespace BddUnity {
         FINISHED
       };
 
-      Entry::Entry * _entries;
+      Timeout _timeout;
+      Context::Interface & _context;
+      Entry::Interface * _entries;
       State _state = State::READY;
       unsigned long _count = 0;
-      long _timeout = 0;
       unsigned long _started = 0;
 
       void _next();

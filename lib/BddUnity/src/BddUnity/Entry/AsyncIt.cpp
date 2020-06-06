@@ -5,11 +5,8 @@
 namespace BddUnity {
   namespace Entry {
 
-    AsyncIt::Async::Async() :
-      _thing(nullptr)
-    {}
-
-    AsyncIt::Async::Async(const char * thing) :
+    AsyncIt::Async::Async(Context::Interface & context, const char * thing) :
+      Context::HasContext(context),
       _thing(thing)
     {}
 
@@ -18,7 +15,7 @@ namespace BddUnity {
     }
 
     void AsyncIt::Async::it(const char * should, const int line, const f_testCallback it) {
-      const char * label = Globals::depth.getLabel(_thing, should);
+      const char * label = _context.getDepth().getLabel(_thing, should);
       // we do this as the UnityTestFunction type
       // does not allow us to bind any context so
       // we effectively pass it through a global
@@ -28,23 +25,24 @@ namespace BddUnity {
       }, label, line);
     }
 
-    AsyncIt * AsyncIt::create(const char * thing, const int line, const f_async it, const long timeout) {
-      void * address = Globals::asyncItMemPool.alloc();
+    AsyncIt * AsyncIt::create(Context::Interface & context, const char * thing, const int line, const f_async it, const long timeout) {
+      MemPool::Interface & memPool = context.getAsyncItMemPool();
+      void * address = memPool.alloc();
       if (address) {
-        return new(address) AsyncIt(thing, line, it, timeout);
+        return new(address) AsyncIt(context, thing, line, it, timeout);
       }
-      setStaticError(Globals::asyncItMemPool.error, thing, line);
+      setStaticError(memPool.error, thing, line);
       return nullptr;
     }
 
     const Error * AsyncIt::free() {
-      return Globals::asyncItMemPool.free(this);
+      return _context.getAsyncItMemPool().free(this);
     }
 
-    void AsyncIt::run(const Entry::f_done & done) {
-      Globals::timeout.label = _thing;
-      Globals::timeout.line = _line;
-      Globals::timeout.timeout = Globals::depth.getTimeout(_timeout);
+    void AsyncIt::run(Timeout & timeout, const Interface::f_done & done) {
+      timeout.label = _thing;
+      timeout.line = _line;
+      timeout.timeout = _context.getDepth().getTimeout(_timeout);
       // use [=] in asyncDone lambda to make a copy of the
       // synchronous done function as it will go out of scope
       // by the next loop, the function it points to will still
@@ -53,11 +51,12 @@ namespace BddUnity {
         // don't let tests use done to report an error
         done(nullptr);
       };
-      new(&Globals::async) Async(_thing);
-      _it(Globals::async, Globals::asyncDone);
+      new(Globals::async) Async(_context, _thing);
+      _it(*Globals::async, Globals::asyncDone);
     }
 
-    AsyncIt::AsyncIt(const char * thing, const int line, const f_async it, const unsigned long timeout) :
+    AsyncIt::AsyncIt(Context::Interface & context, const char * thing, const int line, const f_async it, const unsigned long timeout) :
+      Interface(context),
       _thing(thing),
       _line(line),
       _it(it),

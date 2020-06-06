@@ -1,17 +1,21 @@
 #pragma once
 
-#include "Entry.hpp"
+#include "Interface.hpp"
 
 namespace BddUnity {
   namespace Entry {
 
-    class Pop : public Entry {
+    class Pop : public Interface {
 
       public:
 
-        static Pop * create();
+        static Pop * create(Context::Interface & context);
         const Error * free() override;
-        void run(const f_done & done) override;
+        void run(Timeout & timeout, const f_done & done) override;
+
+      private:
+
+        Pop(Context::Interface & context);
 
     };
 

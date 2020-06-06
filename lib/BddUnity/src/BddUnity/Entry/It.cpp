@@ -4,22 +4,23 @@
 namespace BddUnity {
   namespace Entry {
 
-    It * It::create(const char * should, const int line, const f_testCallback it) {
-      void * address = Globals::itMemPool.alloc();
+    It * It::create(Context::Interface & context, const char * should, const int line, const f_testCallback it) {
+      MemPool::Interface & memPool = context.getItMemPool();
+      void * address = memPool.alloc();
       if (address) {
-        return new(address) It(should, line, it);
+        return new(address) It(context, should, line, it);
       }
-      setStaticError(Globals::itMemPool.error, should, line);
+      setStaticError(memPool.error, should, line);
       return nullptr;
     }
 
     const Error * It::free() {
-      return Globals::itMemPool.free(this);
+      return _context.getItMemPool().free(this);
     }
 
-    void It::run(const f_done & done) {
-      Globals::timeout.timeout = Timeout::NO_TIMEOUT;
-      const char * label = Globals::depth.getLabel(_should);
+    void It::run(Timeout & timeout, const f_done & done) {
+      timeout.timeout = Timeout::NO_TIMEOUT;
+      const char * label = _context.getDepth().getLabel(_should);
       // we do this as the UnityTestFunction type
       // does not allow us to bind any context so
       // we effectively pass it through a global
@@ -31,7 +32,8 @@ namespace BddUnity {
       return;
     }
 
-    It::It(const char * should, const int line, const f_testCallback it) :
+    It::It(Context::Interface & context, const char * should, const int line, const f_testCallback it) :
+      Interface(context),
       _should(should),
       _line(line),
       _it(it) {}

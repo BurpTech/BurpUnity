@@ -2,9 +2,9 @@
 
 #include <chrono>
 #include <unity.h>
+#include "Context/Interface.hpp"
 #include "defines.hpp"
 #include "Globals.hpp"
-#include "Globals/TestParams.hpp"
 #include "Error.hpp"
 
 namespace BddUnity {
@@ -12,34 +12,24 @@ namespace BddUnity {
   using namespace std::placeholders;
 
   Module::Module(
+    Context::Interface & context,
     const char * thing,
     Entry::Describe::f_describe cb,
     long timeout
   ) :
-    _entries(Entry::Describe::create(thing, 0, cb, timeout))
+    Module(context, thing, 0, cb, timeout)
   {}
 
   Module::Module(
+    Context::Interface & context,
     const char * thing,
     const int line,
     Entry::Describe::f_describe cb,
     long timeout
   ) :
-    _entries(Entry::Describe::create(thing, line, cb, timeout))
+    _context(context),
+    _entries(Entry::Describe::create(context, thing, line, cb, timeout))
   {}
-
-  void Module::start() {
-
-#if BDD_UNITY_PRINT_REPORT > 0
-    // Print the build flags
-    size_t size = 512;
-    char buffer[size];
-    BddUnity::Globals::snprintFlags(buffer, size);
-    puts(buffer);
-#endif
-
-    _next();
-  }
 
   void Module::loop() {
     switch (_state) {
@@ -60,21 +50,21 @@ namespace BddUnity {
   }
 
   void Module::_next() {
-    Entry::Entry * entry = _entries;
+    Entry::Interface * entry = _entries;
     if (entry) {
       _started = _millis();
       _count++;
       _state = State::WAITING;
-      entry->run(std::bind(&Module::_done, this, _count, _1));
+      entry->run(_timeout, std::bind(&Module::_done, this, _count, _1));
     } else {
       _end();
     }
   }
 
   void Module::_checkTimeout() {
-    if (Globals::timeout.timeout != Timeout::NO_TIMEOUT) {
-      if (_millis() - _started > static_cast<unsigned long>(Globals::timeout.timeout)) {
-        Error e(Error::Code::TIMEOUT, Globals::timeout.label, Globals::timeout.line);
+    if (_timeout.timeout != Timeout::NO_TIMEOUT) {
+      if (_millis() - _started > static_cast<unsigned long>(_timeout.timeout)) {
+        Error e(Error::Code::TIMEOUT, _timeout.label, _timeout.line);
         _done(_count, &e);
       }
     }
@@ -93,11 +83,11 @@ namespace BddUnity {
         // store the error for users to read later
         setError(*e);
         // report the error
-        const char * label = Globals::depth.getLabel(error.label);
-        Globals::testLine = error.line;
-        Globals::testMessage = error.c_str();
+        const char * label = _context.getDepth().getLabel(error.label);
+        Globals::errorLine = error.line;
+        Globals::errorMessage = error.c_str();
         UnityDefaultTestRun([]() {
-          UNITY_TEST_FAIL(Globals::testLine, Globals::testMessage);
+          UNITY_TEST_FAIL(Globals::errorLine, Globals::errorMessage);
         }, label, error.line);
         // Clean everything up and stop
         while (_entries) {
@@ -108,7 +98,7 @@ namespace BddUnity {
       } else {
         // all fine, line up the next entry and free
         // the previous one
-        Entry::Entry * previous = _entries;
+        Entry::Interface * previous = _entries;
         _entries = _entries->next;
         previous->free();
         _state = State::READY;
@@ -117,15 +107,6 @@ namespace BddUnity {
   }
 
   void Module::_end() {
-
-#if BDD_UNITY_PRINT_REPORT > 0
-    // Print the actual memory usage for tuning
-    size_t size = 512;
-    char buffer[size];
-    BddUnity::Globals::snprintMemory(buffer, size);
-    puts(buffer);
-#endif
-
     _state = State::FINISHED;
   }
 

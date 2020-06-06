@@ -9,7 +9,8 @@
 int status;
 MyLib myLib;
 
-Module module("MyLib", [](Describe & describe) {
+Context context;
+Module module(context, "MyLib", [](Describe & describe) {
 
   describe.it("should fail", []() {
     TEST_ASSERT_TRUE(false);
@@ -42,7 +43,6 @@ Module module("MyLib", [](Describe & describe) {
 void setup()
 {
   UNITY_BEGIN();
-  module.start();
 }
 
 void loop()
@@ -65,4 +65,3 @@ int main()
 
   return status;
 }
-
