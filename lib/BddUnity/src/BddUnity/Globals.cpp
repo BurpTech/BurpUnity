@@ -7,6 +7,9 @@ namespace BddUnity {
     int snprintFlags(char * buffer, size_t size) {
 
       const char * format = 
+        "----------------------\n"
+        "BddUnity: Build flags:\n"
+        "----------------------\n"
         "BDD_UNITY_SHORT_NAMES: %d\n"
         "BDD_UNITY_SAFE_MEM_POOLS: %d\n"
         "BDD_UNITY_MAX_DEPTH: %d\n"
@@ -31,8 +34,10 @@ namespace BddUnity {
     int snprintMemory(char * buffer, size_t size) {
 
       const char * format = 
+        "------------------------------\n"
+        "BddUnity: Actual memory usage:\n"
+        "------------------------------\n"
         "maximum depth reached (BDD_UNITY_MAX_DEPTH): %lu (%d)\n"
-        "maximum pops allocated (BDD_UNITY_MAX_DEPTH): %lu (%d)\n"
         "maximum describes allocated (BDD_UNITY_MAX_DESCRIBES): %lu (%d)\n"
         "maximum its allocated (BDD_UNITY_MAX_ITS): %lu (%d)\n"
         "maximum async its allocated (BDD_UNITY_MAX_ASYNC_ITS): %lu (%d)\n";

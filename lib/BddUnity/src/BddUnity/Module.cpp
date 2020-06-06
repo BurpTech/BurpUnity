@@ -16,31 +16,24 @@ namespace BddUnity {
     Entry::Describe::f_describe cb,
     long timeout
   ) :
-    _file(thing),
     _entries(Entry::Describe::create(thing, 0, cb, timeout))
   {}
 
   Module::Module(
-    const char * file,
     const char * thing,
     const int line,
     Entry::Describe::f_describe cb,
     long timeout
   ) :
-    _file(file),
     _entries(Entry::Describe::create(thing, line, cb, timeout))
   {}
 
   void Module::start() {
-    UnityBegin(_file);
 
 #if BDD_UNITY_PRINT_REPORT > 0
     // Print the build flags
-    size_t size = 256;
+    size_t size = 512;
     char buffer[size];
-    puts("----------------------\n");
-    puts("BddUnity: Build flags:\n");
-    puts("----------------------\n");
     BddUnity::Globals::snprintFlags(buffer, size);
     puts(buffer);
 #endif
@@ -129,15 +122,11 @@ namespace BddUnity {
     // Print the actual memory usage for tuning
     size_t size = 512;
     char buffer[size];
-    puts("------------------------------\n");
-    puts("BddUnity: Actual memory usage:\n");
-    puts("------------------------------\n");
     BddUnity::Globals::snprintMemory(buffer, size);
     puts(buffer);
 #endif
 
     _state = State::FINISHED;
-    status = UnityEnd();
   }
 
   unsigned long Module::_millis() {

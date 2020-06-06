@@ -2,9 +2,11 @@
 #include <Arduino.h>
 #endif
 
+#include <unity.h>
 #include <BddUnity.hpp>
 #include <MyLib.hpp>
 
+int status;
 MyLib myLib;
 
 Module module("MyLib", [](Describe & describe) {
@@ -39,6 +41,7 @@ Module module("MyLib", [](Describe & describe) {
 
 void setup()
 {
+  UNITY_BEGIN();
   module.start();
 }
 
@@ -46,16 +49,20 @@ void loop()
 {
   myLib.loop();
   module.loop();
+  if (!module.isRunning()) {
+    status = UNITY_END();
+  }
 }
 
 int main()
 {
   setup();
+
   while (module.isRunning())
   {
     loop();
   }
 
-  return module.status;
+  return status;
 }
 

@@ -10,15 +10,12 @@ namespace BddUnity {
     
     public:
 
-      int status = 0;
-
       Module(
         const char * thing,
         Entry::Describe::f_describe cb,
         long timeout = Timeout::INHERIT_TIMEOUT
       );
       Module(
-        const char * file,
         const char * thing,
         const int line,
         Entry::Describe::f_describe cb,
@@ -36,7 +33,6 @@ namespace BddUnity {
         FINISHED
       };
 
-      const char * _file;
       Entry::Entry * _entries;
       State _state = State::READY;
       unsigned long _count = 0;
