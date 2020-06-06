@@ -1,8 +1,9 @@
 #pragma once
 
+#include "HasError.hpp"
 namespace BddUnity {
   
-  class Timeout {
+  class Timeout : HasError {
     
     public:
 
@@ -12,6 +13,14 @@ namespace BddUnity {
       const char * label = nullptr;
       int line = 0;
       long timeout = INHERIT_TIMEOUT;
+
+      void start();
+      Error * check();
+
+    private:
+
+      unsigned long _started = 0;
+      unsigned long _millis();
 
   };
 

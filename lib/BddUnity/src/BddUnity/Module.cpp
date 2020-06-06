@@ -1,6 +1,5 @@
 #include "Module.hpp"
 
-#include <chrono>
 #include <unity.h>
 #include "Context/Interface.hpp"
 #include "defines.hpp"
@@ -13,22 +12,22 @@ namespace BddUnity {
 
   Module::Module(
     Context::Interface & context,
-    const char * thing,
+    const char * name,
     Entry::Describe::f_describe cb,
     long timeout
   ) :
-    Module(context, thing, 0, cb, timeout)
+    Module(context, name, 0, cb, timeout)
   {}
 
   Module::Module(
     Context::Interface & context,
-    const char * thing,
+    const char * name,
     const int line,
     Entry::Describe::f_describe cb,
     long timeout
   ) :
-    _context(context),
-    _entries(Entry::Describe::create(context, thing, line, cb, timeout))
+    Context::HasContext(context),
+    _entries(Entry::Describe::create(context, name, line, cb, timeout))
   {}
 
   void Module::loop() {
@@ -37,7 +36,12 @@ namespace BddUnity {
         //do nothing
         break;
       case State::WAITING:
-        _checkTimeout();
+        {
+          Error * e = _timeout.check();
+          if (e) {
+            _done(_count, e);
+          }
+        }
         break;
       case State::READY:
         _next();
@@ -52,21 +56,12 @@ namespace BddUnity {
   void Module::_next() {
     Entry::Interface * entry = _entries;
     if (entry) {
-      _started = _millis();
+      _timeout.start();
       _count++;
       _state = State::WAITING;
       entry->run(_timeout, std::bind(&Module::_done, this, _count, _1));
     } else {
       _end();
-    }
-  }
-
-  void Module::_checkTimeout() {
-    if (_timeout.timeout != Timeout::NO_TIMEOUT) {
-      if (_millis() - _started > static_cast<unsigned long>(_timeout.timeout)) {
-        Error e(Error::Code::TIMEOUT, _timeout.label, _timeout.line);
-        _done(_count, &e);
-      }
     }
   }
 
@@ -108,10 +103,6 @@ namespace BddUnity {
 
   void Module::_end() {
     _state = State::FINISHED;
-  }
-
-  unsigned long Module::_millis() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
   }
 
 }
