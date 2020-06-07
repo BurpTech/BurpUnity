@@ -1,34 +1,47 @@
 #include "Module.hpp"
 
 #include <unity.h>
-#include "Context/Interface.hpp"
-#include "defines.hpp"
+#include "Entry/Interface.hpp"
 #include "Globals.hpp"
-#include "Error.hpp"
+#include "Entry/Describe/Params.hpp"
+#include "Depth/Params.hpp"
 
 namespace BddUnity {
 
   using namespace std::placeholders;
 
   Module::Module(
-    Context::Interface & context,
+    Memory::Interface & memory,
     const char * name,
-    Entry::Describe::f_describe cb,
+    Entry::Describe::Params::f_describe cb,
     long timeout
   ) :
-    Module(context, name, 0, cb, timeout)
+    Module(memory, name, 0, cb, timeout)
   {}
 
   Module::Module(
-    Context::Interface & context,
+    Memory::Interface & memory,
     const char * name,
     const int line,
-    Entry::Describe::f_describe cb,
+    Entry::Describe::Params::f_describe cb,
     long timeout
-  ) :
-    Context::HasContext(context),
-    _entries(Entry::Describe::create(context, name, line, cb, timeout))
-  {}
+  ) {
+    const Depth::Params depthParams = {};
+    _depth = memory.getDepthFactory().create(depthParams);
+    const Entry::Describe::Params describeParams = {
+      memory,
+      name,
+      line,
+      cb,
+      timeout
+    };
+    _entries = memory.getDescribeFactory().create(describeParams);
+  }
+
+  Module::~Module() {
+    _freeEntries();
+    _depth->free();
+  }
 
   void Module::loop() {
     switch (_state) {
@@ -59,10 +72,24 @@ namespace BddUnity {
       _timeout.start();
       _count++;
       _state = State::WAITING;
-      entry->run(_timeout, std::bind(&Module::_done, this, _count, _1));
+      entry->_run(*_depth, _timeout, std::bind(&Module::_done, this, _count, _1));
     } else {
       _end();
     }
+  }
+
+  int Module::snprintMaxDepth(char * buffer, size_t size) {
+
+    const char * format = 
+      "--------------------\n"
+      "BddUnity: max depth:\n"
+      "--------------------\n"
+      "maximum depth reached (BDD_UNITY_MAX_DEPTH): %lu (%d)\n";
+
+    return snprintf(buffer, size, format,
+      _depth->highUsed,
+      _depth->getMaxDepth());
+
   }
 
   void Module::_done(const unsigned long count, const Error * e) {
@@ -78,17 +105,14 @@ namespace BddUnity {
         // store the error for users to read later
         setError(*e);
         // report the error
-        const char * label = _context.getDepth().getLabel(error.label);
+        const char * label = _depth->getLabel(error.label);
         Globals::errorLine = error.line;
         Globals::errorMessage = error.c_str();
         UnityDefaultTestRun([]() {
           UNITY_TEST_FAIL(Globals::errorLine, Globals::errorMessage);
         }, label, error.line);
         // Clean everything up and stop
-        while (_entries) {
-          _entries->free();
-          _entries = _entries->next;
-        }
+        _freeEntries();
         _end();
       } else {
         // all fine, line up the next entry and free
@@ -103,6 +127,13 @@ namespace BddUnity {
 
   void Module::_end() {
     _state = State::FINISHED;
+  }
+
+  void Module::_freeEntries() {
+    while (_entries) {
+      _entries->free();
+      _entries = _entries->next;
+    }
   }
 
 }

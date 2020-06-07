@@ -1,16 +1,27 @@
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <stdio.h>
 #include "Interface.hpp"
+#include "Params.hpp"
+#include "../Factory/HasFactory.hpp"
 
 namespace BddUnity {
   namespace Depth {
 
     template <size_t maxDepth, size_t labelBufferSize, long defaultTimeout>
-    class Instance : public Interface {
+    class Instance : public Interface, public Factory::HasFactory<Interface, Params> {
       
       public:
+
+        Instance(Factory::Interface<Interface, Params> & factory, const Params & params) :
+          Factory::HasFactory<Interface, Params>(factory)
+        {}
+
+        const Error * free() override {
+          return Factory::HasFactory<Interface, Params>::free();
+        }
 
         const Error * push(const char * label, const long timeout) override {
           if (maxDepth == _current) {
@@ -60,6 +71,10 @@ namespace BddUnity {
           return ret;
         }
 
+        const size_t getMaxDepth() override {
+          return maxDepth;
+        }
+
       private:
 
         struct Frame {
@@ -92,6 +107,10 @@ namespace BddUnity {
           char * destination = _currentLabel == _label1 ? _label2 : _label1;
           snprintf(destination, labelBufferSize, "%s[%s]", _currentLabel, field);
           _currentLabel = destination;
+        }
+
+        const Error * _free() override {
+          return nullptr;
         }
 
     };

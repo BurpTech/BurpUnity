@@ -1,15 +1,15 @@
 #pragma once
 
-#ifndef BDD_UNITY_PRINT_REPORT
-#define BDD_UNITY_PRINT_REPORT 0
-#endif
-
 #ifndef BDD_UNITY_SHORT_NAMES
 #define BDD_UNITY_SHORT_NAMES 1
 #endif
 
 #ifndef BDD_UNITY_SAFE_MEM_POOLS
 #define BDD_UNITY_SAFE_MEM_POOLS 0
+#endif
+
+#ifndef BDD_UNITY_MAX_MODULES
+#define BDD_UNITY_MAX_MODULES 5
 #endif
 
 #ifndef BDD_UNITY_MAX_DEPTH
@@ -26,6 +26,10 @@
 
 #ifndef BDD_UNITY_MAX_DESCRIBES
 #define BDD_UNITY_MAX_DESCRIBES 20
+#endif
+
+#ifndef BDD_UNITY_MAX_POPS
+#define BDD_UNITY_MAX_POPS 20
 #endif
 
 #ifndef BDD_UNITY_MAX_ITS

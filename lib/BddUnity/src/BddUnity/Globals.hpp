@@ -1,17 +1,16 @@
 #pragma once
 
-#include "Entry/It.hpp"
-#include "Entry/AsyncIt.hpp"
+#include "Entry/It/Params.hpp"
+#include "Entry/AsyncIt/Params.hpp"
+#include "Entry/AsyncIt/Async.hpp"
 
 namespace BddUnity {
   namespace Globals {
 
     extern int errorLine;
     extern const char * errorMessage;
-    extern Entry::It::f_testCallback testCallback;
+    extern Entry::It::Params::f_testCallback testCallback;
     extern Entry::AsyncIt::Async::f_testCallback asyncTestCallback;
-    extern Entry::AsyncIt::f_done asyncDone;
-    extern Entry::AsyncIt::Async * async;
 
   }
 }
