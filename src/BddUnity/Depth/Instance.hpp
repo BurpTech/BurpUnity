@@ -13,6 +13,74 @@
 #include "../Memory/Stack/Instance.hpp"
 #include "../Memory/Stack/Interface.hpp"
 
+#define BDD_UNITY_DEPTH_SYNC_SET(NAME, SET_NAME, ERROR_CODE, STACK)\
+  const Error * SET_NAME(const Entry::Callback::Params & params) override {\
+    Frame & frame = *(_frameStack.current());\
+    if (frame.NAME != Frame::CallbackType::NONE) {\
+      setError(Error::Code::ERROR_CODE);\
+      return &error;\
+    }\
+    frame.NAME = Frame::CallbackType::SYNC;\
+    return STACK.push(params);\
+  }
+#define BDD_UNITY_DEPTH_ASYNC_SET(NAME, SET_NAME, ERROR_CODE, STACK)\
+  const Error * SET_NAME(const Entry::AsyncCallback::Params & params) override {\
+    Frame & frame = *(_frameStack.current());\
+    if (frame.NAME != Frame::CallbackType::NONE) {\
+      setError(Error::Code::ERROR_CODE);\
+      return &error;\
+    }\
+    frame.NAME = Frame::CallbackType::ASYNC;\
+    return STACK.push(params);\
+  }
+#define BDD_UNITY_DEPTH_SINGLE_CALLBACK(NAME, SET_NAME, ERROR_CODE, SYNC_STACK, ASYNC_STACK)\
+  BDD_UNITY_DEPTH_SYNC_SET(NAME, SET_NAME, ERROR_CODE, SYNC_STACK)\
+  BDD_UNITY_DEPTH_ASYNC_SET(NAME, SET_NAME, ERROR_CODE, ASYNC_STACK)\
+  const Error * NAME(\
+    Entry::List & list,\
+    Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,\
+    Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool\
+  ) override {\
+    size_t syncIndex = SYNC_STACK.currentIndex();\
+    size_t asyncIndex = ASYNC_STACK.currentIndex();\
+    const Frame & frame = *(_frameStack.current());\
+    return _createEntry(\
+      frame.NAME,\
+      list,\
+      true,\
+      syncPool,\
+      asyncPool,\
+      SYNC_STACK,\
+      ASYNC_STACK,\
+      syncIndex,\
+      asyncIndex\
+    );\
+  }
+#define BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(NAME, SET_NAME, ERROR_CODE, SYNC_STACK, ASYNC_STACK)\
+  BDD_UNITY_DEPTH_SYNC_SET(NAME, SET_NAME, ERROR_CODE, SYNC_STACK)\
+  BDD_UNITY_DEPTH_ASYNC_SET(NAME, SET_NAME, ERROR_CODE, ASYNC_STACK)\
+  const Error * NAME(\
+    Entry::List & list,\
+    Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,\
+    Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool\
+  ) override {\
+    size_t syncIndex = 0;\
+    size_t asyncIndex = 0;\
+    return _frameStack.forEach([&](const Frame & frame) {\
+      return _createEntry(\
+        frame.NAME,\
+        list,\
+        true,\
+        syncPool,\
+        asyncPool,\
+        SYNC_STACK,\
+        ASYNC_STACK,\
+        syncIndex,\
+        asyncIndex\
+      );\
+    });\
+  }
+
 namespace BddUnity {
   namespace Depth {
 
@@ -28,6 +96,7 @@ namespace BddUnity {
       size_t maxAsyncBeforeEach,
       size_t maxAfterEach,
       size_t maxAsyncAfterEach,
+      size_t maxLoop,
       bool safe
     >
     class Instance : public Interface, public Memory::Pool::HasPool<Interface, Params> {
@@ -58,6 +127,8 @@ namespace BddUnity {
           if (e) ret = e;
           e = _popEntryParams(frame.afterEach, _afterEachStack, _asyncAfterEachStack);
           if (e) ret = e;
+          e = _popLoop(frame.hasLoop);
+          if (e) ret = e;
           e = _frameStack.pop();
           if (e) ret = e;
           return ret;
@@ -76,169 +147,25 @@ namespace BddUnity {
           return _currentLabel;
         }
 
-        const Error * setBefore(const Entry::Callback::Params & params) override {
+        BDD_UNITY_DEPTH_SINGLE_CALLBACK(before, setBefore, BEFORE_SET, _beforeStack, _asyncBeforeStack)
+        BDD_UNITY_DEPTH_SINGLE_CALLBACK(after, setAfter, AFTER_SET, _afterStack, _asyncAfterStack)
+        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(beforeEach, setBeforeEach, BEFORE_EACH_SET, _beforeEachStack, _asyncBeforeEachStack)
+        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(afterEach, setAfterEach, AFTER_EACH_SET, _afterEachStack, _asyncAfterEachStack)
+
+        const Error * setLoop(const Entry::Describe::Loop & loop) override {
           Frame & frame = *(_frameStack.current());
-          if (frame.before != Frame::CallbackType::NONE) {
-            setError(Error::Code::BEFORE_SET);
+          if (frame.hasLoop) {
+            setError(Error::Code::HAS_LOOP);
             return &error;
           }
-          frame.before = Frame::CallbackType::SYNC;
-          return _beforeStack.push(params);
+          frame.hasLoop = true;
+          return _loopStack.push(loop);
         }
 
-        const Error * setBefore(const Entry::AsyncCallback::Params & params) override {
-          Frame & frame = *(_frameStack.current());
-          if (frame.before != Frame::CallbackType::NONE) {
-            setError(Error::Code::BEFORE_SET);
-            return &error;
-          }
-          frame.before = Frame::CallbackType::ASYNC;
-          return _asyncBeforeStack.push(params);
-        }
-
-        const Error * before(
-          Entry::List & list,
-          Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,
-          Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool
-        ) override {
-          size_t syncIndex = _beforeStack.currentIndex();
-          size_t asyncIndex = _asyncBeforeStack.currentIndex();
-          const Frame & frame = *(_frameStack.current());
-          return _createEntry(
-            frame.before,
-            list,
-            true,
-            syncPool,
-            asyncPool,
-            _beforeStack,
-            _asyncBeforeStack,
-            syncIndex,
-            asyncIndex
-          );
-        }
-
-        const Error * setAfter(const Entry::Callback::Params & params) override {
-          Frame & frame = *(_frameStack.current());
-          if (frame.after != Frame::CallbackType::NONE) {
-            setError(Error::Code::AFTER_SET);
-            return &error;
-          }
-          frame.after = Frame::CallbackType::SYNC;
-          return _afterStack.push(params);
-        }
-
-        const Error * setAfter(const Entry::AsyncCallback::Params & params) override {
-          Frame & frame = *(_frameStack.current());
-          if (frame.after != Frame::CallbackType::NONE) {
-            setError(Error::Code::AFTER_SET);
-            return &error;
-          }
-          frame.after = Frame::CallbackType::ASYNC;
-          return _asyncAfterStack.push(params);
-        }
-
-        const Error * after(
-          Entry::List & list,
-          Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,
-          Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool
-        ) override {
-          size_t syncIndex = _afterStack.currentIndex();
-          size_t asyncIndex = _asyncAfterStack.currentIndex();
-          const Frame & frame = *(_frameStack.current());
-          return _createEntry(
-            frame.after,
-            list,
-            false,
-            syncPool,
-            asyncPool,
-            _afterStack,
-            _asyncAfterStack,
-            syncIndex,
-            asyncIndex
-          );
-        }
-
-        const Error * setBeforeEach(const Entry::Callback::Params & params) override {
-          Frame & frame = *(_frameStack.current());
-          if (frame.beforeEach != Frame::CallbackType::NONE) {
-            setError(Error::Code::BEFORE_EACH_SET);
-            return &error;
-          }
-          frame.beforeEach = Frame::CallbackType::SYNC;
-          return _beforeEachStack.push(params);
-        }
-
-        const Error * setBeforeEach(const Entry::AsyncCallback::Params & params) override {
-          Frame & frame = *(_frameStack.current());
-          if (frame.beforeEach != Frame::CallbackType::NONE) {
-            setError(Error::Code::BEFORE_EACH_SET);
-            return &error;
-          }
-          frame.beforeEach = Frame::CallbackType::ASYNC;
-          return _asyncBeforeEachStack.push(params);
-        }
-
-        const Error * beforeEach(
-          Entry::List & list,
-          Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,
-          Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool
-        ) override {
-          size_t syncIndex = 0;
-          size_t asyncIndex = 0;
-          return _frameStack.forEach([&](const Frame & frame) {
-            return _createEntry(
-              frame.beforeEach,
-              list,
-              true,
-              syncPool,
-              asyncPool,
-              _beforeEachStack,
-              _asyncBeforeEachStack,
-              syncIndex,
-              asyncIndex
-            );
-          });
-        }
-
-        const Error * setAfterEach(const Entry::Callback::Params & params) override {
-          Frame & frame = *(_frameStack.current());
-          if (frame.afterEach != Frame::CallbackType::NONE) {
-            setError(Error::Code::AFTER_EACH_SET);
-            return &error;
-          }
-          frame.afterEach = Frame::CallbackType::SYNC;
-          return _afterEachStack.push(params);
-        }
-
-        const Error * setAfterEach(const Entry::AsyncCallback::Params & params) override {
-          Frame & frame = *(_frameStack.current());
-          if (frame.afterEach != Frame::CallbackType::NONE) {
-            setError(Error::Code::AFTER_EACH_SET);
-            return &error;
-          }
-          frame.afterEach = Frame::CallbackType::ASYNC;
-          return _asyncAfterEachStack.push(params);
-        }
-
-        const Error * afterEach(
-          Entry::List & list,
-          Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,
-          Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool
-        ) override {
-          size_t syncIndex = 0;
-          size_t asyncIndex = 0;
-          return _frameStack.forEach([&](const Frame & frame) {
-            return _createEntry(
-              frame.afterEach,
-              list,
-              false,
-              syncPool,
-              asyncPool,
-              _afterEachStack,
-              _asyncAfterEachStack,
-              syncIndex,
-              asyncIndex
-            );
+        void loop() override {
+          _loopStack.forEach([&](const Entry::Describe::Loop & loop) {
+            loop.cb();
+            return nullptr;
           });
         }
 
@@ -337,6 +264,14 @@ namespace BddUnity {
           safe
         > _asyncAfterEachStack;
 
+        Memory::Stack::Instance<
+          Entry::Describe::Loop,
+          Entry::Describe::Loop,
+          Entry::Describe::Loop,
+          maxLoop,
+          safe
+        > _loopStack;
+
         // we use 2 buffers to make concatenation simpler
         char _label1[labelBufferSize];
         char _label2[labelBufferSize];
@@ -359,6 +294,13 @@ namespace BddUnity {
         }
 
         const Error * _free() override {
+          return nullptr;
+        }
+
+        const Error * _popLoop(bool hasLoop) {
+          if (hasLoop) {
+            return _loopStack.pop();
+          }
           return nullptr;
         }
 

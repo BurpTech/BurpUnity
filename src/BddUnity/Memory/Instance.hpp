@@ -10,6 +10,7 @@
 #include "../Entry/AsyncIt/Instance.hpp"
 #include "../Entry/Callback/Instance.hpp"
 #include "../Entry/AsyncCallback/Instance.hpp"
+#include <cstddef>
 
 namespace BddUnity {
   namespace Memory {
@@ -34,7 +35,8 @@ namespace BddUnity {
       size_t maxBeforeEach,
       size_t maxAsyncBeforeEach,
       size_t maxAfterEach,
-      size_t maxAsyncAfterEach
+      size_t maxAsyncAfterEach,
+      size_t maxLoop
     >
     class Instance : public Interface {
 
@@ -97,7 +99,8 @@ namespace BddUnity {
             "maxBeforeEach: %d\n"
             "maxAsyncBeforeEach: %d\n"
             "maxAfterEach: %d\n"
-            "maxAsyncAfterEach: %d\n";
+            "maxAsyncAfterEach: %d\n"
+            "maxLoop: %d\n";
 
           return snprintf(buffer, size, format,
             safeMemPools,
@@ -119,7 +122,8 @@ namespace BddUnity {
             maxBeforeEach,
             maxAsyncBeforeEach,
             maxAfterEach,
-            maxAsyncAfterEach);
+            maxAsyncAfterEach,
+            maxLoop);
 
         }
 
@@ -174,6 +178,7 @@ namespace BddUnity {
             maxAsyncBeforeEach,
             maxAfterEach,
             maxAsyncAfterEach,
+            maxLoop,
             safeMemPools
           >,
           Depth::Params,

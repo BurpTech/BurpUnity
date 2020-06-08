@@ -116,6 +116,19 @@ namespace BddUnity {
         }
       }
 
+      void Instance::loop(const Loop::f_loop cb) {
+        loop(0, cb);
+      }
+
+      void Instance::loop(const int line, const Loop::f_loop cb) {
+        Loop loop = {
+          line,
+          cb
+        };
+        const Error * e = _params.depth.setLoop(loop);
+        if (e) setError(*e, "loop", line);
+      }
+
       void Instance::_run(List & list, Depth::Interface & depth, Timeout & timeout, const f_done & done) {
         timeout.timeout = Timeout::NO_TIMEOUT;
         Depth::Frame frame(_params.thing, _params.timeout);

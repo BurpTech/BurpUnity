@@ -21,7 +21,8 @@ namespace BddUnity {
         BEFORE_SET,
         AFTER_SET,
         BEFORE_EACH_SET,
-        AFTER_EACH_SET
+        AFTER_EACH_SET,
+        HAS_LOOP
       };
 
       Code code;

@@ -58,6 +58,8 @@ namespace BddUnity {
         return "beforeEach callback can only be set once per describe";
       case Code::AFTER_EACH_SET:
         return "afterEach callback can only be set once per describe";
+      case Code::HAS_LOOP:
+        return "loop callback can only be set once per describe";
     }
     return nullptr;
   }

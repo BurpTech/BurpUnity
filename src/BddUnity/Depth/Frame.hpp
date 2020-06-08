@@ -22,6 +22,7 @@ namespace BddUnity {
         CallbackType after;
         CallbackType beforeEach;
         CallbackType afterEach;
+        bool hasLoop;
 
     };
 

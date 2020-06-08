@@ -8,6 +8,7 @@
 #include "../Callback/Params.hpp"
 #include "../AsyncCallback/Params.hpp"
 #include "Params.hpp"
+#include "Loop.hpp"
 
 #define BDD_UNITY_ENTRY_DESCRIBE_DECLARE_CALLBACK(NAME)\
   void NAME(const int line, const Callback::Params::f_callback cb);\
@@ -38,6 +39,9 @@ namespace BddUnity {
 
           void it(const char * should, const It::Params::f_testCallback it);
           void it(const char * should, const int line, const It::Params::f_testCallback it);
+
+          void loop(const Loop::f_loop loop);
+          void loop(const int line, const Loop::f_loop loop);
 
         private:
 

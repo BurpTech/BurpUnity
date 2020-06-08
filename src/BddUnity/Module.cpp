@@ -50,21 +50,24 @@ namespace BddUnity {
   }
 
   void Module::loop() {
-    switch (_state) {
-      case State::FINISHED:
-        //do nothing
-        break;
-      case State::WAITING:
-        {
-          Error * e = _timeout.check();
-          if (e) {
-            _done(_count, e);
+    if (isRunning()) {
+      _depth->loop();
+      switch (_state) {
+        case State::FINISHED:
+          //do nothing
+          break;
+        case State::WAITING:
+          {
+            Error * e = _timeout.check();
+            if (e) {
+              _done(_count, e);
+            }
           }
-        }
-        break;
-      case State::READY:
-        _next();
-        break;
+          break;
+        case State::READY:
+          _next();
+          break;
+      }
     }
   }
 
