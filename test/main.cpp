@@ -16,8 +16,45 @@ Memory memory;
 
 Module module1(memory, "MyLib1", [](Describe & describe) {
 
-  describe.it("should fail", []() {
-    TEST_ASSERT_TRUE(false);
+  describe.before([]() {
+    printf("before\n");
+  });
+
+  describe.beforeEach([]() {
+    printf("before each\n");
+  });
+
+  describe.afterEach([]() {
+    printf("after each\n");
+  });
+
+  describe.after([]() {
+    printf("after\n");
+  });
+
+  describe.describe("another thing", [](Describe & describe) {
+
+    describe.before([]() {
+      printf("before another thing\n");
+    });
+
+    describe.beforeEach([]() {
+      printf("before each another thing\n");
+    });
+
+    describe.it("should fail", []() {
+      TEST_IGNORE();
+      TEST_ASSERT_TRUE(false);
+    });
+
+    describe.afterEach([]() {
+      printf("after each another thing\n");
+    });
+
+    describe.after([]() {
+      printf("after another thing\n");
+    });
+
   });
 
   describe.async("callMeNextLoop", [](Async & async, f_done & done) {
@@ -26,6 +63,7 @@ Module module1(memory, "MyLib1", [](Describe & describe) {
         TEST_ASSERT_EQUAL(100, value);
       });
       async.it("should fail", [&]() {
+        TEST_IGNORE();
         TEST_ASSERT_EQUAL(10, value);
       });
       // signal that we are done, this
@@ -46,7 +84,22 @@ Module module1(memory, "MyLib1", [](Describe & describe) {
 
 Module module2(memory, "MyLib2", [](Describe & describe) {
 
+  describe.before([](f_done & done) {
+    myLib2.callMeNextLoop(50, [&](int value) {
+      printf("before: %d\n", value);
+      done();
+    });
+  });
+
+  describe.after([](f_done & done) {
+    myLib2.callMeNextLoop(100, [&](int value) {
+      printf("after: %d\n", value);
+      done();
+    });
+  });
+
   describe.it("should fail", []() {
+    TEST_IGNORE();
     TEST_ASSERT_TRUE(false);
   });
 
@@ -56,6 +109,7 @@ Module module2(memory, "MyLib2", [](Describe & describe) {
         TEST_ASSERT_EQUAL(100, value);
       });
       async.it("should fail", [&]() {
+        TEST_IGNORE();
         TEST_ASSERT_EQUAL(10, value);
       });
       // signal that we are done, this
@@ -74,14 +128,22 @@ Module module2(memory, "MyLib2", [](Describe & describe) {
 
 });
 
+Module * modules[] = {
+  &module1,
+  &module2,
+  nullptr
+};
+Runner runner(modules, false);
+
 void setup()
 {
   UNITY_BEGIN();
 
-  // print the memory configuration
-  char buffer[512];
-  memory.snprintParams(buffer, 512);
-  puts(buffer);
+  // // print the memory configuration
+  // char buffer[512];
+  // memory.snprintParams(buffer, 512);
+  // puts(buffer);
+
 }
 
 void loop()
@@ -89,19 +151,18 @@ void loop()
   myLib1.loop();
   myLib2.loop();
 
-  if (module1.isRunning() || module2.isRunning()) {
-    module1.loop();
-    module2.loop();
+  if (runner.isRunning()) {
+    runner.loop();
   } else {
 
-    // print the actual memory usage
-    char buffer[512];
-    memory.snprintUsage(buffer, 512);
-    puts(buffer);
-    module1.snprintMaxDepth(buffer, 512);
-    puts(buffer);
-    module2.snprintMaxDepth(buffer, 512);
-    puts(buffer);
+    // // print the actual memory usage
+    // char buffer[512];
+    // memory.snprintUsage(buffer, 512);
+    // puts(buffer);
+    // module1.snprintMaxDepth(buffer, 512);
+    // puts(buffer);
+    // module2.snprintMaxDepth(buffer, 512);
+    // puts(buffer);
 
     status = UNITY_END();
     running = false;

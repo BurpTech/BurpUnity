@@ -2,19 +2,52 @@
 #include "../AsyncIt/Params.hpp"
 #include "../It/Params.hpp"
 #include "../Pop/Params.hpp"
+#include "../../Depth/Frame.hpp"
+
+#define IMPLEMENT_CALLBACK(NAME, DEPTH_FUNCTION)\
+  void Instance::NAME(const int line, const Callback::Params::f_callback cb) {\
+    Callback::Params params(\
+      _params.thing,\
+      line,\
+      cb\
+    );\
+    const Error * e = _params.depth.DEPTH_FUNCTION(params);\
+    if (e) setError(*e, "before", line);\
+  }\
+  void Instance::NAME(const Callback::Params::f_callback cb) {\
+    NAME(0, cb);\
+  }\
+  void Instance::NAME(const int line, const AsyncCallback::Params::f_async cb, const long timeout) {\
+    AsyncCallback::Params params(\
+      _params.thing,\
+      line,\
+      cb,\
+      timeout\
+    );\
+    const Error * e = _params.depth.DEPTH_FUNCTION(params);\
+    if (e) setError(*e, "before", line);\
+  }\
+  void Instance::NAME(const AsyncCallback::Params::f_async cb, const long timeout) {\
+    NAME(0, cb, timeout);\
+  }
 
 namespace BddUnity {
   namespace Entry {
     namespace Describe {
 
-      Instance::Instance(Factory::Interface<Interface, Params> & factory, const Params & params) :
-        Factory::HasFactory<Interface, Params>(factory),
+      Instance::Instance(Memory::Pool::Interface<Interface, Params> * pool, const Params & params) :
+        Memory::Pool::HasPool<Interface, Params>(pool),
         _params(params)
       {}
 
       const Error * Instance::free() {
-        return Factory::HasFactory<Interface, Params>::free();
+        return Memory::Pool::HasPool<Interface, Params>::free();
       }
+
+      IMPLEMENT_CALLBACK(before, setBefore)
+      IMPLEMENT_CALLBACK(after, setAfter)
+      IMPLEMENT_CALLBACK(beforeEach, setBeforeEach)
+      IMPLEMENT_CALLBACK(afterEach, setAfterEach)
 
       void Instance::describe(const char * thing, const Params::f_describe describe, const long timeout) {
         Instance::describe(thing, 0, describe, timeout);
@@ -22,17 +55,23 @@ namespace BddUnity {
 
       void Instance::describe(const char * thing, const int line, const Params::f_describe describe, const long timeout) {
         Params params = {
-          _params.memory,
+          _params.depth,
+          _params.popPool,
+          _params.testPool,
+          _params.itPool,
+          _params.asyncItPool,
+          _params.callbackPool,
+          _params.asyncCallbackPool,
           thing,
           line,
           describe,
           timeout
         };
-        Interface * entry = _factory.create(params);
+        Interface * entry = _pool->create(params);
         if (entry) {
-          _append(entry);
+          _list.append(entry);
         } else {
-          setError(_factory.error, thing, line);
+          setError(_pool->error, thing, line);
         }
       }
 
@@ -47,12 +86,13 @@ namespace BddUnity {
           it,
           timeout
         };
-        Factory::Interface<Interface, AsyncIt::Params> & factory = _params.memory.getAsyncItFactory();
-        Interface * entry = factory.create(params);
+        Interface * entry = _params.asyncItPool.create(params);
         if (entry) {
-          _append(entry);
+          // wrap in a test so that it can be expanded
+          // with beforeEach and afterEach entries
+          _addTest(entry, thing, line);
         } else {
-          setError(factory.error, thing, line);
+          setError(_params.asyncItPool.error, thing, line);
         }
       }
 
@@ -66,18 +106,20 @@ namespace BddUnity {
           line,
           it
         };
-        Factory::Interface<Interface, It::Params> & factory = _params.memory.getItFactory();
-        Interface * entry = factory.create(params);
+        Interface * entry = _params.itPool.create(params);
         if (entry) {
-          _append(entry);
+          // wrap in a test so that it can be expanded
+          // with beforeEach and afterEach entries
+          _addTest(entry, should, line);
         } else {
-          setError(factory.error, should, line);
+          setError(_params.itPool.error, should, line);
         }
       }
 
-      void Instance::_run(Depth::Interface & depth, Timeout & timeout, const f_done & done) {
+      void Instance::_run(List & list, Depth::Interface & depth, Timeout & timeout, const f_done & done) {
         timeout.timeout = Timeout::NO_TIMEOUT;
-        const Error * e = depth.push(_params.thing, _params.timeout);
+        Depth::Frame frame(_params.thing, _params.timeout);
+        const Error * e = depth.push(frame);
         if (e) {
           // failed to increase the depth
           setError(*e, _params.thing, _params.line);
@@ -94,48 +136,67 @@ namespace BddUnity {
           return;
         }
 
-        // append a pop to the entries
-        Pop::Params params = {};
-        Factory::Interface<Interface, Pop::Params> & factory = _params.memory.getPopFactory();
-        Interface * entry = factory.create(params);
-        if (!entry) {
-          // I don't think this can happen
-          // as the depth would be exceeded first
-          setError(factory.error, _params.thing, _params.line);
+        // add the before callback
+        List before;
+        e = depth.before(before, _params.callbackPool, _params.asyncCallbackPool);
+        if (e) {
+          // failed to allocate before callbacks
+          setError(*e, "prepend before", _params.line);
           done(&error);
           return;
         }
-        _append(entry);
+        _list.prepend(before);
 
-        // now insert the entries as next
-        // and clear the local reference
-        _entriesTail->next = next;
-        next = _entries;
-        _entries = nullptr;
+        // add the after callback
+        List after;
+        e = depth.after(after, _params.callbackPool, _params.asyncCallbackPool);
+        if (e) {
+          // failed to allocate before callbacks
+          setError(*e, "append after", _params.line);
+          done(&error);
+          return;
+        }
+        _list.append(after);
+
+        // append a pop to the entries
+        Pop::Params params = {};
+        Interface * entry = _params.popPool.create(params);
+        if (!entry) {
+          // I don't think this can happen
+          // as the depth would be exceeded first
+          setError(_params.popPool.error, "append pop", _params.line);
+          done(&error);
+          return;
+        }
+        _list.append(entry);
+
+        // now transfer the entries
+        // to the master list
+        _list.transfer(list);
 
         // and we're done
         done(nullptr);
         return;
       }
 
-      void Instance::_append(Interface * entry) {
-        if (_entries) {
-          _entriesTail->next = entry;
+      void Instance::_addTest(Interface * entry, const char * label, const int line) {
+        Test::Params params = {
+          label,
+          line,
+          _params.callbackPool,
+          _params.asyncCallbackPool,
+          entry
+        };
+        Interface * test = _params.testPool.create(params);
+        if (test) {
+          _list.append(test);
         } else {
-          _entries = entry;
+          setError(_params.testPool.error, label, line);
         }
-        _entriesTail = entry;
       }
 
       const Error * Instance::_free() {
-        const Error * ret = nullptr;
-        const Error * e = nullptr;
-        while (_entries) {
-          e = _entries->free();
-          if (e) ret = e;
-          _entries = _entries->next;
-        }
-        return ret;
+        return _list.freeAll();
       }
 
     }

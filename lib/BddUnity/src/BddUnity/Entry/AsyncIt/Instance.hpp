@@ -3,17 +3,17 @@
 #include "Params.hpp"
 #include "Async.hpp"
 #include "../Interface.hpp"
-#include "../../Factory/HasFactory.hpp"
+#include "../../Memory/Pool/HasPool.hpp"
 
 namespace BddUnity {
   namespace Entry {
     namespace AsyncIt {
 
-      class Instance : public Interface, public Factory::HasFactory<Interface, Params> {
+      class Instance : public Interface, public Memory::Pool::HasPool<Interface, Params> {
 
         public:
 
-          Instance(Factory::Interface<Interface, Params> & factory, const Params & params);
+          Instance(Memory::Pool::Interface<Interface, Params> * pool, const Params & params);
 
         private:
 
@@ -21,7 +21,7 @@ namespace BddUnity {
           Async _async;
           Params::f_done _done;
 
-          void _run(Depth::Interface & depth, Timeout & timeout, const Interface::f_done & done) override;
+          void _run(List & list, Depth::Interface & depth, Timeout & timeout, const Interface::f_done & done) override;
           const Error * _free() override;
           const Error * free() override;
 

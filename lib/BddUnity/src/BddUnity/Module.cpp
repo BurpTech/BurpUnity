@@ -27,19 +27,25 @@ namespace BddUnity {
     long timeout
   ) {
     const Depth::Params depthParams = {};
-    _depth = memory.getDepthFactory().create(depthParams);
+    _depth = memory.getDepthPool().create(depthParams);
     const Entry::Describe::Params describeParams = {
-      memory,
+      *_depth,
+      memory.getPopPool(),
+      memory.getTestPool(),
+      memory.getItPool(),
+      memory.getAsyncItPool(),
+      memory.getCallbackPool(),
+      memory.getAsyncCallbackPool(),
       name,
       line,
       cb,
       timeout
     };
-    _entries = memory.getDescribeFactory().create(describeParams);
+    _list.append(memory.getDescribePool().create(describeParams));
   }
 
   Module::~Module() {
-    _freeEntries();
+    _list.freeAll();
     _depth->free();
   }
 
@@ -67,12 +73,12 @@ namespace BddUnity {
   }
 
   void Module::_next() {
-    Entry::Interface * entry = _entries;
+    Entry::Interface * entry = _list.head;
     if (entry) {
       _timeout.start();
       _count++;
       _state = State::WAITING;
-      entry->_run(*_depth, _timeout, std::bind(&Module::_done, this, _count, _1));
+      entry->_run(_list, *_depth, _timeout, std::bind(&Module::_done, this, _count, _1));
     } else {
       _end();
     }
@@ -105,21 +111,24 @@ namespace BddUnity {
         // store the error for users to read later
         setError(*e);
         // report the error
-        const char * label = _depth->getLabel(error.label);
+        const char * label;
+        if (error.label2) {
+          label = _depth->getLabel(error.label1, error.label2);
+        } else {
+          label = _depth->getLabel(error.label1);
+        }
         Globals::errorLine = error.line;
         Globals::errorMessage = error.c_str();
         UnityDefaultTestRun([]() {
           UNITY_TEST_FAIL(Globals::errorLine, Globals::errorMessage);
         }, label, error.line);
         // Clean everything up and stop
-        _freeEntries();
+        _list.freeAll();
         _end();
       } else {
         // all fine, line up the next entry and free
         // the previous one
-        Entry::Interface * previous = _entries;
-        _entries = _entries->next;
-        previous->free();
+        _list.freeHead();
         _state = State::READY;
       }
     }
@@ -127,13 +136,6 @@ namespace BddUnity {
 
   void Module::_end() {
     _state = State::FINISHED;
-  }
-
-  void Module::_freeEntries() {
-    while (_entries) {
-      _entries->free();
-      _entries = _entries->next;
-    }
   }
 
 }

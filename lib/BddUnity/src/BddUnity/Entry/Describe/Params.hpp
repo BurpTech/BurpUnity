@@ -1,7 +1,15 @@
 #pragma once
 
 #include <functional>
-#include "../../Memory/Interface.hpp"
+#include "../Interface.hpp"
+#include "../../Depth/Interface.hpp"
+#include "../../Memory/Pool/Interface.hpp"
+#include "../Pop/Params.hpp"
+#include "../Test/Params.hpp"
+#include "../It/Params.hpp"
+#include "../AsyncIt/Params.hpp"
+#include "../Callback/Params.hpp"
+#include "../AsyncCallback/Params.hpp"
 
 namespace BddUnity {
   namespace Entry {
@@ -13,7 +21,13 @@ namespace BddUnity {
 
         using f_describe = std::function<void(Instance & describe)>;
 
-        Memory::Interface & memory;
+        Depth::Interface & depth;
+        Memory::Pool::Interface<Interface, Pop::Params> & popPool;
+        Memory::Pool::Interface<Interface, Test::Params> & testPool;
+        Memory::Pool::Interface<Interface, It::Params> & itPool;
+        Memory::Pool::Interface<Interface, AsyncIt::Params> & asyncItPool;
+        Memory::Pool::Interface<Interface, Callback::Params> & callbackPool;
+        Memory::Pool::Interface<Interface, AsyncCallback::Params> & asyncCallbackPool;
         const char * thing;
         const int line;
         const f_describe describe;

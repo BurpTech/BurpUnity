@@ -1,30 +1,31 @@
 #pragma once
 
 #include <stdio.h>
-#include "../Factory/Interface.hpp"
+#include "Pool/Interface.hpp"
 #include "../Depth/Interface.hpp"
 #include "../Depth/Params.hpp"
 #include "../Entry/Interface.hpp"
+#include "../Entry/Describe/Params.hpp"
 #include "../Entry/Pop/Params.hpp"
+#include "../Entry/Test/Params.hpp"
 #include "../Entry/It/Params.hpp"
 #include "../Entry/AsyncIt/Params.hpp"
+#include "../Entry/Callback/Params.hpp"
+#include "../Entry/AsyncCallback/Params.hpp"
 
 namespace BddUnity {
-  namespace Entry {
-    namespace Describe {
-      class Params;
-    }
-  }
-
   namespace Memory {
 
     class Interface {
       public:
-        virtual Factory::Interface<Depth::Interface, Depth::Params> & getDepthFactory() = 0;
-        virtual Factory::Interface<Entry::Interface, Entry::Describe::Params> & getDescribeFactory() = 0;
-        virtual Factory::Interface<Entry::Interface, Entry::Pop::Params> & getPopFactory() = 0;
-        virtual Factory::Interface<Entry::Interface, Entry::It::Params> & getItFactory() = 0;
-        virtual Factory::Interface<Entry::Interface, Entry::AsyncIt::Params> & getAsyncItFactory() = 0;
+        virtual Pool::Interface<Depth::Interface, Depth::Params> & getDepthPool() = 0;
+        virtual Pool::Interface<Entry::Interface, Entry::Describe::Params> & getDescribePool() = 0;
+        virtual Pool::Interface<Entry::Interface, Entry::Pop::Params> & getPopPool() = 0;
+        virtual Pool::Interface<Entry::Interface, Entry::Test::Params> & getTestPool() = 0;
+        virtual Pool::Interface<Entry::Interface, Entry::It::Params> & getItPool() = 0;
+        virtual Pool::Interface<Entry::Interface, Entry::AsyncIt::Params> & getAsyncItPool() = 0;
+        virtual Pool::Interface<Entry::Interface, Entry::Callback::Params> & getCallbackPool() = 0;
+        virtual Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & getAsyncCallbackPool() = 0;
         virtual int snprintParams(char * buffer, size_t size) = 0;
         virtual int snprintUsage(char * buffer, size_t size) = 0;
     };

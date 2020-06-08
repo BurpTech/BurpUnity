@@ -18,6 +18,11 @@ namespace BddUnity {
     hasError = true;
   }
 
+  void HasError::setError(const Error & e, const char * label1, const char * label2, const int line) {
+    new(&error) Error(e, label1, label2, line);
+    hasError = true;
+  }
+
   void HasError::setError(const Error & e) {
     new(&error) Error(e);
     hasError = true;

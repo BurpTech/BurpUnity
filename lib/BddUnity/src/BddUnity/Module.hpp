@@ -1,8 +1,9 @@
 #pragma once
 
 #include "HasError.hpp"
+#include "Memory/Interface.hpp"
 #include "Depth/Interface.hpp"
-#include "Entry/Interface.hpp"
+#include "Entry/List.hpp"
 #include "Entry/Describe/Params.hpp"
 #include "Timeout.hpp"
 #include <cstddef>
@@ -40,7 +41,7 @@ namespace BddUnity {
       };
 
       Depth::Interface * _depth;
-      Entry::Interface * _entries;
+      Entry::List _list;
       Timeout _timeout;
       State _state = State::READY;
       unsigned long _count = 0;
@@ -48,7 +49,6 @@ namespace BddUnity {
       void _next();
       void _done(const unsigned long count, const Error * e);
       void _end();
-      void _freeEntries();
 
   };
 

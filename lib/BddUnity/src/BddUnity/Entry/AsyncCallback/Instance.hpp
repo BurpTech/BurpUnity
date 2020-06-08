@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Params.hpp"
 #include "../Interface.hpp"
 #include "../../Memory/Pool/HasPool.hpp"
-#include "Params.hpp"
 
 namespace BddUnity {
   namespace Entry {
-    namespace It {
+    namespace AsyncCallback {
 
       class Instance : public Interface, public Memory::Pool::HasPool<Interface, Params> {
 
@@ -16,9 +16,10 @@ namespace BddUnity {
 
         private:
 
-          const Params _params;
+          const Params & _params;
+          Params::f_done _done;
 
-          void _run(List & list, Depth::Interface & depth, Timeout & timeout, const f_done & done) override;
+          void _run(List & list, Depth::Interface & depth, Timeout & timeout, const Interface::f_done & done) override;
           const Error * _free() override;
           const Error * free() override;
 

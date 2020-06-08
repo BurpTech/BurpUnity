@@ -9,6 +9,9 @@ namespace BddUnity {
   class Module;
 
   namespace Entry {
+
+    class List;
+
     namespace Describe {
 
       class Instance;
@@ -19,6 +22,7 @@ namespace BddUnity {
 
       friend class BddUnity::Module;
       friend class Describe::Instance;
+      friend class List;
 
       public:
 
@@ -26,9 +30,9 @@ namespace BddUnity {
 
       private:
 
-        Interface * next = nullptr;
+        Interface * _next = nullptr;
 
-        virtual void _run(Depth::Interface & depth, Timeout & timeout, const f_done & done) = 0;
+        virtual void _run(List & list, Depth::Interface & depth, Timeout & timeout, const f_done & done) = 0;
         virtual const Error * free() = 0;
 
     };

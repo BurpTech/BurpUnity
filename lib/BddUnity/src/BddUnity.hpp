@@ -1,7 +1,8 @@
 #pragma once
 
-#include "BddUnity/Entry/AsyncIt/Params.hpp"
 #include "BddUnity/defines.hpp"
+#include "BddUnity/Entry/AsyncIt/Params.hpp"
+#include "BddUnity/Runner.hpp"
 #include "BddUnity/Memory/Instance.hpp"
 #include "BddUnity/Module.hpp"
 
@@ -15,13 +16,25 @@ using Memory = BddUnity::Memory::Instance<
 BDD_UNITY_LABEL_BUFFER_SIZE,
 BDD_UNITY_DEFAULT_TIMEOUT,
 BDD_UNITY_SAFE_MEM_POOLS,
-BDD_UNITY_MAX_MODULES,
+BDD_UNITY_MAX_MODULE,
 BDD_UNITY_MAX_DEPTH,
-BDD_UNITY_MAX_DESCRIBES,
-BDD_UNITY_MAX_POPS,
-BDD_UNITY_MAX_ITS,
-BDD_UNITY_MAX_ASYNC_ITS
+BDD_UNITY_MAX_DESCRIBE,
+BDD_UNITY_MAX_POP,
+BDD_UNITY_MAX_TEST,
+BDD_UNITY_MAX_IT,
+BDD_UNITY_MAX_ASYNC_IT,
+BDD_UNITY_MAX_CALLBACK,
+BDD_UNITY_MAX_ASYNC_CALLBACK,
+BDD_UNITY_MAX_BEFORE,
+BDD_UNITY_MAX_ASYNC_BEFORE,
+BDD_UNITY_MAX_AFTER,
+BDD_UNITY_MAX_ASYNC_AFTER,
+BDD_UNITY_MAX_BEFORE_EACH,
+BDD_UNITY_MAX_ASYNC_BEFORE_EACH,
+BDD_UNITY_MAX_AFTER_EACH,
+BDD_UNITY_MAX_ASYNC_AFTER_EACH
 >;
+using Runner = BddUnity::Runner;
 using Module = BddUnity::Module;
 using Describe = BddUnity::Entry::Describe::Instance;
 using f_done = BddUnity::Entry::AsyncIt::Params::f_done;
