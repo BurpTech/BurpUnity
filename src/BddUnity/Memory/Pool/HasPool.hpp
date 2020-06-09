@@ -20,16 +20,23 @@ namespace BddUnity {
             _pool(pool)
           {}
 
-          const Error * free() {
+          // We need the this address from the derived class as in the
+          // case of multiple inheritance the base class this pointer
+          // may be different and we need to return the correct address
+          // to the pool
+          const Error * free(void * address) {
             if (_pool) {
-              const Error * e1 = _free();
-              if (e1) setError(*e1);
-              const Error * e2 = _pool->free(this);
-              if (e2) setError(*e2);
+              const Error * e = _free();
+              if (e) setError(*e);
+              e = _pool->free(address);
+              if (e) setError(*e);
             } else {
               setError(Error::Code::NO_POOL);
             }
-            return &error;
+            if (hasError) {
+              return &error;
+            }
+            return nullptr;
           }
 
         protected:

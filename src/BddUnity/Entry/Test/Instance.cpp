@@ -1,4 +1,5 @@
 #include "Instance.hpp"
+#include <cstdio>
 
 namespace BddUnity {
   namespace Entry {
@@ -14,7 +15,7 @@ namespace BddUnity {
       }
 
       const Error * Instance::free() {
-        return Memory::Pool::HasPool<Interface, Params>::free();
+        return Memory::Pool::HasPool<Interface, Params>::free(this);
       }
 
       void Instance::_run(List & list, Depth::Interface & depth, Timeout & timeout, const f_done & done) {

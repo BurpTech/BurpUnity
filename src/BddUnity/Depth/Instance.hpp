@@ -56,7 +56,7 @@
       asyncIndex\
     );\
   }
-#define BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(NAME, SET_NAME, ERROR_CODE, SYNC_STACK, ASYNC_STACK)\
+#define BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(NAME, SET_NAME, ERROR_CODE, SYNC_STACK, ASYNC_STACK, APPEND)\
   BDD_UNITY_DEPTH_SYNC_SET(NAME, SET_NAME, ERROR_CODE, SYNC_STACK)\
   BDD_UNITY_DEPTH_ASYNC_SET(NAME, SET_NAME, ERROR_CODE, ASYNC_STACK)\
   const Error * NAME(\
@@ -70,7 +70,7 @@
       return _createEntry(\
         frame.NAME,\
         list,\
-        true,\
+        APPEND,\
         syncPool,\
         asyncPool,\
         SYNC_STACK,\
@@ -108,7 +108,7 @@ namespace BddUnity {
         {}
 
         const Error * free() override {
-          return Memory::Pool::HasPool<Interface, Params>::free();
+          return Memory::Pool::HasPool<Interface, Params>::free(this);
         }
 
         const Error * push(const Frame & frame) override {
@@ -149,8 +149,8 @@ namespace BddUnity {
 
         BDD_UNITY_DEPTH_SINGLE_CALLBACK(before, setBefore, BEFORE_SET, _beforeStack, _asyncBeforeStack)
         BDD_UNITY_DEPTH_SINGLE_CALLBACK(after, setAfter, AFTER_SET, _afterStack, _asyncAfterStack)
-        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(beforeEach, setBeforeEach, BEFORE_EACH_SET, _beforeEachStack, _asyncBeforeEachStack)
-        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(afterEach, setAfterEach, AFTER_EACH_SET, _afterEachStack, _asyncAfterEachStack)
+        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(beforeEach, setBeforeEach, BEFORE_EACH_SET, _beforeEachStack, _asyncBeforeEachStack, true)
+        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(afterEach, setAfterEach, AFTER_EACH_SET, _afterEachStack, _asyncAfterEachStack, false)
 
         const Error * setLoop(const Entry::Describe::Loop & loop) override {
           Frame & frame = *(_frameStack.current());
@@ -339,7 +339,8 @@ namespace BddUnity {
               return nullptr;
             case Frame::CallbackType::SYNC:
               {
-                entry = syncPool.create(*(syncStack.get(syncIndex++)));
+                const Entry::Callback::Params * params = syncStack.get(syncIndex++);
+                entry = syncPool.create(*params);
                 if (!entry) {
                   return &(syncPool.error);
                 }

@@ -6,7 +6,8 @@ namespace BddUnity {
 
     List::List() :
       head(nullptr),
-      _tail(nullptr)
+      _tail(nullptr),
+      _length(0)
     {}
 
     void List::append(Interface * entry) {
@@ -16,6 +17,7 @@ namespace BddUnity {
         head = entry;
       }
       _tail = entry;
+      _length++;
     }
 
     void List::append(List & source) {
@@ -28,15 +30,24 @@ namespace BddUnity {
         _tail = source._tail;
         source.head = nullptr;
         source._tail = nullptr;
+        _length += source._length;
+        source._length = 0;
       }
     }
 
     void List::transfer(List & destination) {
       if (head) {
-        _tail->_next = destination.head->_next;
+        // check if the destination has only 1 entry
+        if (destination.head->_next) {
+          _tail->_next = destination.head->_next;
+        } else {
+          destination._tail = _tail;
+        }
         destination.head->_next = head;
         head = nullptr;
         _tail = nullptr;
+        destination._length += _length;
+        _length = 0;
       }
     }
 
@@ -47,6 +58,7 @@ namespace BddUnity {
         _tail = entry;
       }
       head = entry;
+      _length++;
     }
 
     void List::prepend(List & source) {
@@ -55,6 +67,8 @@ namespace BddUnity {
         head = source.head;
         source.head = nullptr;
         source._tail = nullptr;
+        _length += source._length;
+        source._length = 0;
       }
     }
 
@@ -62,6 +76,8 @@ namespace BddUnity {
       if (head) {
         Interface * previous = head;
         head = previous->_next;
+        if (!head) _tail = nullptr;
+        _length--;
         return previous->free();
       }
       return nullptr;
@@ -77,6 +93,7 @@ namespace BddUnity {
         head = head->_next;
       }
       _tail = nullptr;
+      _length = 0;
       return ret;
     }
 

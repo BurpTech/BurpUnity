@@ -19,7 +19,7 @@ namespace BddUnity {
       }
 
       const Error * Instance::free() {
-        return Memory::Pool::HasPool<Interface, Params>::free();
+        return Memory::Pool::HasPool<Interface, Params>::free(this);
       }
 
       const Error * Instance::_free() {

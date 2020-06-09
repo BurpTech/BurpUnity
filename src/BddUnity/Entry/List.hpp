@@ -2,6 +2,7 @@
 
 #include "Interface.hpp"
 #include "../Error.hpp"
+#include <cstddef>
 
 namespace BddUnity {
   namespace Entry {
@@ -24,6 +25,7 @@ namespace BddUnity {
       private:
 
         Interface * _tail;
+        size_t _length;
 
     };
 

@@ -10,6 +10,7 @@
 #include "../AsyncIt/Params.hpp"
 #include "../Callback/Params.hpp"
 #include "../AsyncCallback/Params.hpp"
+#include "Setup.hpp"
 
 namespace BddUnity {
   namespace Entry {
@@ -28,6 +29,7 @@ namespace BddUnity {
         Memory::Pool::Interface<Interface, AsyncIt::Params> & asyncItPool;
         Memory::Pool::Interface<Interface, Callback::Params> & callbackPool;
         Memory::Pool::Interface<Interface, AsyncCallback::Params> & asyncCallbackPool;
+        Memory::Pool::Interface<Setup, Setup> & setupPool;
         const char * thing;
         const int line;
         const f_describe describe;

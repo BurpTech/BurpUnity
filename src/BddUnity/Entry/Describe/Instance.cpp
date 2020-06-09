@@ -37,11 +37,14 @@ namespace BddUnity {
 
       Instance::Instance(Memory::Pool::Interface<Interface, Params> * pool, const Params & params) :
         Memory::Pool::HasPool<Interface, Params>(pool),
-        _params(params)
+        _params(params),
+        _setup(nullptr),
+        _before(nullptr),
+        _after(nullptr)
       {}
 
       const Error * Instance::free() {
-        return Memory::Pool::HasPool<Interface, Params>::free();
+        return Memory::Pool::HasPool<Interface, Params>::free(this);
       }
 
       IMPLEMENT_CALLBACK(before, setBefore)
@@ -62,6 +65,7 @@ namespace BddUnity {
           _params.asyncItPool,
           _params.callbackPool,
           _params.asyncCallbackPool,
+          _params.setupPool,
           thing,
           line,
           describe,
@@ -116,6 +120,22 @@ namespace BddUnity {
         }
       }
 
+      void Instance::setup(const Setup::f_setup cb) {
+        setup(0, cb);
+      }
+
+      void Instance::setup(const int line, const Setup::f_setup cb) {
+        if (_setup) {
+          setError(Error::Code::HAS_SETUP, _params.thing, line);
+          return;
+        }
+        Setup setup(line, cb);
+        _setup = _params.setupPool.create(setup);
+        if (!_setup) {
+          setError(_params.setupPool.error, _params.thing, "setup", line);
+        }
+      }
+
       void Instance::loop(const Loop::f_loop cb) {
         loop(0, cb);
       }
@@ -147,6 +167,18 @@ namespace BddUnity {
         if (hasError) {
           done(&error);
           return;
+        }
+
+        // Call the setup callback immediately
+        if (_setup) {
+          _setup->cb();
+          e = _setup->free();
+          _setup = nullptr;
+          if (e) {
+            setError(*e, "setup", _params.line);
+            done(&error);
+            return;
+          }
         }
 
         // add the before callback
@@ -209,7 +241,22 @@ namespace BddUnity {
       }
 
       const Error * Instance::_free() {
-        return _list.freeAll();
+        const Error * ret = nullptr;
+        if (_setup) {
+          const Error * e = _setup->free();
+          if (e) ret = e;
+        }
+        if (_before) {
+          const Error * e = _before->free();
+          if (e) ret = e;
+        }
+        if (_after) {
+          const Error * e = _after->free();
+          if (e) ret = e;
+        }
+        const Error * e = _list.freeAll();
+        if (e) ret = e;
+        return ret;
       }
 
     }

@@ -41,13 +41,16 @@ namespace BddUnity {
       };
 
       Depth::Interface * _depth;
+    public:
       Entry::List _list;
+    private:
       Timeout _timeout;
       State _state = State::READY;
       unsigned long _count = 0;
 
       void _next();
       void _done(const unsigned long count, const Error * e);
+      void _reportError(const Error * e);
       void _end();
 
   };

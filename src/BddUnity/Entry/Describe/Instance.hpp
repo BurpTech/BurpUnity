@@ -40,13 +40,19 @@ namespace BddUnity {
           void it(const char * should, const It::Params::f_testCallback it);
           void it(const char * should, const int line, const It::Params::f_testCallback it);
 
-          void loop(const Loop::f_loop loop);
-          void loop(const int line, const Loop::f_loop loop);
+          void setup(const Setup::f_setup cb);
+          void setup(const int line, const Setup::f_setup cb);
+
+          void loop(const Loop::f_loop cb);
+          void loop(const int line, const Loop::f_loop cb);
 
         private:
 
           const Params _params;
           List _list;
+          Setup * _setup;
+          Interface * _before;
+          Interface * _after;
 
           void _run(List & list, Depth::Interface & depth, Timeout & timeout, const f_done & done) override;
           void _addTest(Interface * entry, const char * label, const int line);

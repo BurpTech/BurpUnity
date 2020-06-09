@@ -11,7 +11,7 @@ namespace BddUnity {
       {}
 
       const Error * Instance::free() {
-        return Memory::Pool::HasPool<Interface, Params>::free();
+        return Memory::Pool::HasPool<Interface, Params>::free(this);
       }
 
       void Instance::_run(List & list, Depth::Interface & depth, Timeout & timeout, const Interface::f_done & done) {

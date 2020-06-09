@@ -36,6 +36,7 @@ namespace BddUnity {
       size_t maxAsyncBeforeEach,
       size_t maxAfterEach,
       size_t maxAsyncAfterEach,
+      size_t maxSetup,
       size_t maxLoop
     >
     class Instance : public Interface {
@@ -74,6 +75,10 @@ namespace BddUnity {
           return _asyncCallbackPool;
         }
 
+        Pool::Interface<Entry::Describe::Setup, Entry::Describe::Setup> & getSetupPool() override {
+          return _setupPool;
+        }
+
         int snprintParams(char * buffer, size_t size) override {
 
           const char * format = 
@@ -100,6 +105,7 @@ namespace BddUnity {
             "maxAsyncBeforeEach: %d\n"
             "maxAfterEach: %d\n"
             "maxAsyncAfterEach: %d\n"
+            "maxSetup: %d\n"
             "maxLoop: %d\n";
 
           return snprintf(buffer, size, format,
@@ -123,6 +129,7 @@ namespace BddUnity {
             maxAsyncBeforeEach,
             maxAfterEach,
             maxAsyncAfterEach,
+            maxSetup,
             maxLoop);
 
         }
@@ -140,7 +147,8 @@ namespace BddUnity {
             "maximum its allocated (BDD_UNITY_MAX_IT): %lu (%d)\n"
             "maximum async its allocated (BDD_UNITY_MAX_ASYNC_IT): %lu (%d)\n"
             "maximum callbacks allocated (BDD_UNITY_MAX_CALLBACK): %lu (%d)\n"
-            "maximum async callbacks allocated (BDD_UNITY_MAX_ASYNC_CALLBACK): %lu (%d)\n";
+            "maximum async callbacks allocated (BDD_UNITY_MAX_SETUP): %lu (%d)\n"
+            "maximum setups allocated (BDD_UNITY_MAX_ASYNC_CALLBACK): %lu (%d)\n";
 
           return snprintf(buffer, size, format,
             _depthPool.highUsed,
@@ -158,7 +166,9 @@ namespace BddUnity {
             _callbackPool.highUsed,
             maxCallback,
             _asyncCallbackPool.highUsed,
-            maxAsyncCallback);
+            maxAsyncCallback,
+            _setupPool.highUsed,
+            maxSetup);
 
         }
 
@@ -234,6 +244,13 @@ namespace BddUnity {
           maxAsyncCallback,
           safeMemPools
         > _asyncCallbackPool;
+        Pool::Instance<
+          Entry::Describe::Setup,
+          Entry::Describe::Setup,
+          Entry::Describe::Setup,
+          maxSetup,
+          safeMemPools
+        > _setupPool;
 
     };
 

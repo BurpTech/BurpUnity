@@ -16,7 +16,8 @@ namespace BddUnity {
           ReturnType * create(const Params & params) override {
             void * address = _alloc();
             if (address) {
-              return new(address) InternalType(this, params);
+              InternalType * ret = new(address) InternalType(this, params);
+              return ret;
             }
             return nullptr;
           }
@@ -30,8 +31,8 @@ namespace BddUnity {
 
               // check that the address has been allocated.
               if (!(
-                address >= &(_pool) &&
-                address < &(_pool) + (_currentUsed * sizeof(InternalType))
+                address >= _pool &&
+                address < _pool + (_currentUsed * sizeof(InternalType))
               )) {
                 Interface<ReturnType, Params>::setError(Error::Code::NOT_ALLOC);
                 return &(Interface<ReturnType, Params>::error);
@@ -67,11 +68,14 @@ namespace BddUnity {
 
             if (_currentFree) {
               // grab a free address
-              return _free[--_currentFree];
+              _currentFree--;
+              _currentUsed++;
+              return _free[_currentFree];
             }
 
             // send the next address from the pool
-            void * ret = &(_pool[_currentUsed++]);
+            _currentUsed++;
+            void * ret = &(_pool[_currentUsed]);
             Interface<ReturnType, Params>::highUsed =
               _currentUsed > Interface<ReturnType, Params>::highUsed ?
               _currentUsed :

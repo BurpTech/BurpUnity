@@ -36,6 +36,7 @@ namespace BddUnity {
       memory.getAsyncItPool(),
       memory.getCallbackPool(),
       memory.getAsyncCallbackPool(),
+      memory.getSetupPool(),
       name,
       line,
       cb,
@@ -111,30 +112,39 @@ namespace BddUnity {
       // Check for errors and update _entries
       // appropriately
       if (e) {
-        // store the error for users to read later
-        setError(*e);
-        // report the error
-        const char * label;
-        if (error.label2) {
-          label = _depth->getLabel(error.label1, error.label2);
-        } else {
-          label = _depth->getLabel(error.label1);
-        }
-        Globals::errorLine = error.line;
-        Globals::errorMessage = error.c_str();
-        UnityDefaultTestRun([]() {
-          UNITY_TEST_FAIL(Globals::errorLine, Globals::errorMessage);
-        }, label, error.line);
-        // Clean everything up and stop
-        _list.freeAll();
-        _end();
-      } else {
-        // all fine, line up the next entry and free
-        // the previous one
-        _list.freeHead();
-        _state = State::READY;
+        _reportError(e);
+        return;
       }
+      // all fine, line up the next entry and free
+      // the previous one
+      const Error * e = _list.freeHead();
+      if (e) {
+        _reportError(e);
+        return;
+      }
+      // still fine set the state to READY
+      _state = State::READY;
     }
+  }
+
+  void Module::_reportError(const Error * e) {
+    // store the error for users to read later
+    setError(*e);
+    // report the error
+    const char * label;
+    if (error.label2) {
+      label = _depth->getLabel(error.label1, error.label2);
+    } else {
+      label = _depth->getLabel(error.label1);
+    }
+    Globals::errorLine = error.line;
+    Globals::errorMessage = error.c_str();
+    UnityDefaultTestRun([]() {
+      UNITY_TEST_FAIL(Globals::errorLine, Globals::errorMessage);
+    }, label, error.line);
+    // Clean everything up and stop
+    _list.freeAll();
+    _end();
   }
 
   void Module::_end() {

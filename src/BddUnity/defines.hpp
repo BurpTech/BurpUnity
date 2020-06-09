@@ -84,6 +84,10 @@
 #define BDD_UNITY_MAX_ASYNC_AFTER_EACH 20
 #endif
 
+#ifndef BDD_UNITY_MAX_SETUP
+#define BDD_UNITY_MAX_SETUP 20
+#endif
+
 #ifndef BDD_UNITY_MAX_LOOP
 #define BDD_UNITY_MAX_LOOP 20
 #endif
