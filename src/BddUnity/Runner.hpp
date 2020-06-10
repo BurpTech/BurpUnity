@@ -1,22 +1,26 @@
 #pragma once
 
-#include "Module.hpp"
+#include <functional>
+#include "Runnable.hpp"
 
 namespace BddUnity {
 
-  class Runner {
+  class Runner : public Runnable {
 
     public:
 
-      Runner(Module ** modules, bool parallel = false);
-      void loop();
-      bool isRunning();
+      Runner(Runnable ** runnables);
+      void setup(Memory::Interface & memory) override;
+      void loop() override;
+      Runnable::State getState() override;
 
     private:
 
-      Module ** _modules;
-      bool _parallel;
-      bool _running;
+      using f_setup = std::function<void(Runnable * runnable)>;
+
+      Runnable ** _runnables;
+      Runnable::State _state;
+      f_setup _setup;
 
   };
 

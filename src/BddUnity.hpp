@@ -2,6 +2,7 @@
 
 #include "BddUnity/defines.hpp"
 #include "BddUnity/Entry/AsyncIt/Params.hpp"
+#include "BddUnity/Runnable.hpp"
 #include "BddUnity/Runner.hpp"
 #include "BddUnity/Memory/Instance.hpp"
 #include "BddUnity/Module.hpp"
@@ -34,6 +35,7 @@ BDD_UNITY_MAX_ASYNC_AFTER_EACH,
 BDD_UNITY_MAX_SETUP,
 BDD_UNITY_MAX_LOOP
 >;
+using Runnable = BddUnity::Runnable;
 using Runner = BddUnity::Runner;
 using Module = BddUnity::Module;
 using Describe = BddUnity::Entry::Describe::Instance;

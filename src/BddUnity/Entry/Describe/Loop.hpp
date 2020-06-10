@@ -9,7 +9,7 @@ namespace BddUnity {
       struct Loop {
 
         using f_loop = std::function<void()>;
-        
+
         const int line;
         const f_loop cb;
 

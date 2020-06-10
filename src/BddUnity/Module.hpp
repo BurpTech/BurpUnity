@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HasError.hpp"
-#include "Memory/Interface.hpp"
+#include "Runnable.hpp"
 #include "Depth/Interface.hpp"
 #include "Entry/List.hpp"
 #include "Entry/Describe/Params.hpp"
@@ -10,47 +10,49 @@
 
 namespace BddUnity {
 
-  class Module : public HasError {
+  class Module : public Runnable {
     
     public:
 
       Module(
-        Memory::Interface & memory,
         const char * name,
         Entry::Describe::Params::f_describe cb,
-        long timeout = Timeout::INHERIT_TIMEOUT
+        const long timeout = Timeout::INHERIT_TIMEOUT
       );
       Module(
-        Memory::Interface & memory,
         const char * name,
         const int line,
         Entry::Describe::Params::f_describe cb,
-        long timeout = Timeout::INHERIT_TIMEOUT
+        const long timeout = Timeout::INHERIT_TIMEOUT
       );
       ~Module();
-      void loop();
-      const bool isRunning();
+      void setup(Memory::Interface & memory) override;
+      void loop() override;
+      Runnable::State getState() override;
       int snprintMaxDepth(char * buffer, size_t size);
 
     private:
 
       enum class State {
+        IDLE,
         READY,
         WAITING,
         FINISHED
       };
 
+      const char * _name;
+      const int _line;
+      Entry::Describe::Params::f_describe _cb;
+      const long _timeout;
       Depth::Interface * _depth;
-    public:
       Entry::List _list;
-    private:
-      Timeout _timeout;
-      State _state = State::READY;
+      Timeout _currentTimeout;
+      State _state;
       unsigned long _count = 0;
 
       void _next();
       void _done(const unsigned long count, const Error * e);
-      void _reportError(const Error * e);
+      void _reportError(const Error & e);
       void _end();
 
   };

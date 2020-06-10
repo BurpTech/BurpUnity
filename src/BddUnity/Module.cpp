@@ -1,33 +1,54 @@
 #include "Module.hpp"
 
 #include <unity.h>
+#include "Depth/Interface.hpp"
 #include "Entry/Interface.hpp"
 #include "Globals.hpp"
 #include "Entry/Describe/Params.hpp"
 #include "Depth/Params.hpp"
+#include "Memory/Interface.hpp"
+#include "Memory/Pool/Interface.hpp"
+#include "Runnable.hpp"
 
 namespace BddUnity {
 
   using namespace std::placeholders;
 
   Module::Module(
-    Memory::Interface & memory,
     const char * name,
     Entry::Describe::Params::f_describe cb,
-    long timeout
+    const long timeout
   ) :
-    Module(memory, name, 0, cb, timeout)
+    Module(name, 0, cb, timeout)
   {}
 
   Module::Module(
-    Memory::Interface & memory,
     const char * name,
     const int line,
     Entry::Describe::Params::f_describe cb,
-    long timeout
-  ) {
+    const long timeout
+  ) :
+    _name(name),
+    _line(line),
+    _cb(cb),
+    _timeout(timeout),
+    _state(State::IDLE)
+  {}
+
+  Module::~Module() {
+    _list.freeAll();
+    _depth->free();
+  }
+
+  void Module::setup(Memory::Interface & memory) {
+    Memory::Pool::Interface<Depth::Interface, Depth::Params> & depthPool = memory.getDepthPool();
     const Depth::Params depthParams = {};
-    _depth = memory.getDepthPool().create(depthParams);
+    _depth = depthPool.create(depthParams);
+    if (!_depth) {
+      _reportError(depthPool.error);
+      return;
+    }
+    Memory::Pool::Interface<Entry::Interface, Entry::Describe::Params> & describePool = memory.getDescribePool();
     const Entry::Describe::Params describeParams = {
       *_depth,
       memory.getPopPool(),
@@ -39,29 +60,27 @@ namespace BddUnity {
       memory.getStackedCallbackPool(),
       memory.getStackedAsyncCallbackPool(),
       memory.getSetupPool(),
-      name,
-      line,
-      cb,
-      timeout
+      _name,
+      _line,
+      _cb,
+      _timeout
     };
-    _list.append(memory.getDescribePool().create(describeParams));
-  }
-
-  Module::~Module() {
-    _list.freeAll();
-    _depth->free();
+    Entry::Interface * entry = describePool.create(describeParams);
+    if (!entry) {
+      _reportError(describePool.error);
+      return;
+    }
+    _list.append(entry);
+    _state = State::READY;
   }
 
   void Module::loop() {
     if (isRunning()) {
       _depth->loop();
       switch (_state) {
-        case State::FINISHED:
-          //do nothing
-          break;
         case State::WAITING:
           {
-            Error * e = _timeout.check();
+            Error * e = _currentTimeout.check();
             if (e) {
               _done(_count, e);
             }
@@ -70,21 +89,37 @@ namespace BddUnity {
         case State::READY:
           _next();
           break;
+        case State::IDLE:
+        case State::FINISHED:
+          // // do nothing but this avoids
+          // // compiler warnings
+          break;
       }
     }
   }
 
-  const bool Module::isRunning() {
-    return (_state != State::FINISHED);
+  Runnable::State Module::getState() {
+    switch (_state) {
+      case State::IDLE:
+        return Runnable::State::IDLE;
+      case State::READY:
+      case State::WAITING:
+        return Runnable::State::RUNNING;
+      case State::FINISHED:
+        // do nothing but this avoids
+        // compiler warnings
+        break;
+    }
+    return Runnable::State::FINISHED;
   }
 
   void Module::_next() {
     Entry::Interface * entry = _list.head;
     if (entry) {
-      _timeout.start();
+      _currentTimeout.start();
       _count++;
       _state = State::WAITING;
-      entry->_run(_list, *_depth, _timeout, std::bind(&Module::_done, this, _count, _1));
+      entry->_run(_list, *_depth, _currentTimeout, std::bind(&Module::_done, this, _count, _1));
     } else {
       _end();
     }
@@ -114,14 +149,14 @@ namespace BddUnity {
       // Check for errors and update _entries
       // appropriately
       if (e) {
-        _reportError(e);
+        _reportError(*e);
         return;
       }
       // all fine, line up the next entry and free
       // the previous one
       const Error * e = _list.freeHead();
       if (e) {
-        _reportError(e);
+        _reportError(*e);
         return;
       }
       // still fine set the state to READY
@@ -129,9 +164,13 @@ namespace BddUnity {
     }
   }
 
-  void Module::_reportError(const Error * e) {
+  void Module::_reportError(const Error & e) {
     // store the error for users to read later
-    setError(*e);
+    if (e.label1) {
+      setError(e);
+    } else {
+      setError(e, _name, _line);
+    }
     // report the error
     const char * label;
     if (error.label2) {

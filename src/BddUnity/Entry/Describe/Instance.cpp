@@ -45,11 +45,11 @@
 
 #define IMPLEMENT_STACKED_CALLBACK(NAME, DEPTH_FUNCTION)\
   void Instance::NAME(const int line, const StackedCallback::Params::f_callback cb) {\
-    StackedCallback::Params params(\
+    StackedCallback::Params params = {\
       _params.thing,\
       line,\
       cb\
-    );\
+    };\
     const Error * e = _params.depth.DEPTH_FUNCTION(params);\
     if (e) setError(*e, "before", line);\
   }\
@@ -57,12 +57,12 @@
     NAME(0, cb);\
   }\
   void Instance::NAME(const int line, const StackedAsyncCallback::Params::f_async cb, const long timeout) {\
-    StackedAsyncCallback::Params params(\
+    StackedAsyncCallback::Params params = {\
       _params.thing,\
       line,\
       cb,\
       timeout\
-    );\
+    };\
     const Error * e = _params.depth.DEPTH_FUNCTION(params);\
     if (e) setError(*e, "before", line);\
   }\
@@ -182,10 +182,7 @@ namespace BddUnity {
       }
 
       void Instance::loop(const int line, const Loop::f_loop cb) {
-        Loop loop = {
-          line,
-          cb
-        };
+        Loop loop = { line, cb };
         const Error * e = _params.depth.setLoop(loop);
         if (e) setError(*e, "loop", line);
       }
