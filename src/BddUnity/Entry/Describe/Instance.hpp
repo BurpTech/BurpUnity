@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../Module.hpp"
 #include "../../Memory/Pool/HasPool.hpp"
 #include "../Interface.hpp"
 #include "../List.hpp"
@@ -36,6 +37,8 @@ namespace BddUnity {
           BDD_UNITY_ENTRY_DESCRIBE_DECLARE_CALLBACK(after);
           BDD_UNITY_ENTRY_DESCRIBE_DECLARE_STACKED_CALLBACK(beforeEach);
           BDD_UNITY_ENTRY_DESCRIBE_DECLARE_STACKED_CALLBACK(afterEach);
+
+          void include(Module & module);
 
           void describe(const char * thing, const Params::f_describe describe, const long timeout = Timeout::INHERIT_TIMEOUT);
           void describe(const char * thing, const int line, const Params::f_describe describe, const long timeout = Timeout::INHERIT_TIMEOUT);

@@ -1,3 +1,4 @@
+#include <functional>
 #include "Instance.hpp"
 #include "../AsyncIt/Params.hpp"
 #include "../It/Params.hpp"
@@ -90,6 +91,19 @@ namespace BddUnity {
       IMPLEMENT_CALLBACK(after, AFTER_SET)
       IMPLEMENT_STACKED_CALLBACK(beforeEach, setBeforeEach)
       IMPLEMENT_STACKED_CALLBACK(afterEach, setAfterEach)
+
+      void Instance::include(Module & module) {
+        using namespace std::placeholders;
+        module._include(std::bind(
+          static_cast<void(Instance::*)(
+            const char * thing,
+            const int line,
+            const Params::f_describe describe,
+            const long timeout
+          )>(&Instance::describe),
+          this, _1, _2, _3, _4
+        ));
+      }
 
       void Instance::describe(const char * thing, const Params::f_describe describe, const long timeout) {
         Instance::describe(thing, 0, describe, timeout);

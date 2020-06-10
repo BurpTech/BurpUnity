@@ -3,6 +3,7 @@
 #include <unity.h>
 #include "Depth/Interface.hpp"
 #include "Entry/Interface.hpp"
+#include "Error.hpp"
 #include "Globals.hpp"
 #include "Entry/Describe/Params.hpp"
 #include "Depth/Params.hpp"
@@ -38,6 +39,10 @@ namespace BddUnity {
   Module::~Module() {
     _list.freeAll();
     _depth->free();
+  }
+
+  void Module::_include(f_include include) {
+    include(_name, _line, _cb, _timeout);
   }
 
   void Module::setup(Memory::Interface & memory) {
