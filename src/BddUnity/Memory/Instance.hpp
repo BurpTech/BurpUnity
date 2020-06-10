@@ -10,6 +10,8 @@
 #include "../Entry/AsyncIt/Instance.hpp"
 #include "../Entry/Callback/Instance.hpp"
 #include "../Entry/AsyncCallback/Instance.hpp"
+#include "../Entry/StackedCallback/Instance.hpp"
+#include "../Entry/StackedAsyncCallback/Instance.hpp"
 #include <cstddef>
 
 namespace BddUnity {
@@ -28,10 +30,8 @@ namespace BddUnity {
       size_t maxAsyncIt,
       size_t maxCallback,
       size_t maxAsyncCallback,
-      size_t maxBefore,
-      size_t maxAsyncBefore,
-      size_t maxAfter,
-      size_t maxAsyncAfter,
+      size_t maxStackedCallback,
+      size_t maxStackedAsyncCallback,
       size_t maxBeforeEach,
       size_t maxAsyncBeforeEach,
       size_t maxAfterEach,
@@ -75,6 +75,14 @@ namespace BddUnity {
           return _asyncCallbackPool;
         }
 
+        Pool::Interface<Entry::Interface, Entry::StackedCallback::Params> & getStackedCallbackPool() override {
+          return _stackedCallbackPool;
+        }
+
+        Pool::Interface<Entry::Interface, Entry::StackedAsyncCallback::Params> & getStackedAsyncCallbackPool() override {
+          return _stackedAsyncCallbackPool;
+        }
+
         Pool::Interface<Entry::Describe::Setup, Entry::Describe::Setup> & getSetupPool() override {
           return _setupPool;
         }
@@ -97,10 +105,8 @@ namespace BddUnity {
             "maxAsyncIt: %d\n"
             "maxCallback: %d\n"
             "maxAsyncCallback: %d\n"
-            "maxBefore: %d\n"
-            "maxAsyncBefore: %d\n"
-            "maxAfter: %d\n"
-            "maxAsyncAfter: %d\n"
+            "maxStackedCallback: %d\n"
+            "maxStackedAsyncCallback: %d\n"
             "maxBeforeEach: %d\n"
             "maxAsyncBeforeEach: %d\n"
             "maxAfterEach: %d\n"
@@ -121,10 +127,8 @@ namespace BddUnity {
             maxAsyncIt,
             maxCallback,
             maxAsyncCallback,
-            maxBefore,
-            maxAsyncBefore,
-            maxAfter,
-            maxAsyncAfter,
+            maxStackedCallback,
+            maxStackedAsyncCallback,
             maxBeforeEach,
             maxAsyncBeforeEach,
             maxAfterEach,
@@ -147,8 +151,10 @@ namespace BddUnity {
             "maximum its allocated (BDD_UNITY_MAX_IT): %lu (%d)\n"
             "maximum async its allocated (BDD_UNITY_MAX_ASYNC_IT): %lu (%d)\n"
             "maximum callbacks allocated (BDD_UNITY_MAX_CALLBACK): %lu (%d)\n"
-            "maximum async callbacks allocated (BDD_UNITY_MAX_SETUP): %lu (%d)\n"
-            "maximum setups allocated (BDD_UNITY_MAX_ASYNC_CALLBACK): %lu (%d)\n";
+            "maximum async callbacks allocated (BDD_UNITY_MAX_ASYNC_CALLBACK): %lu (%d)\n"
+            "maximum stacked callbacks allocated (BDD_UNITY_MAX_STACKED_CALLBACK): %lu (%d)\n"
+            "maximum stacked async callbacks allocated (BDD_UNITY_MAX_STACKED_ASYNC_CALLBACK): %lu (%d)\n"
+            "maximum setups allocated (BDD_UNITY_MAX_SETUP): %lu (%d)\n";
 
           return snprintf(buffer, size, format,
             _depthPool.highUsed,
@@ -167,6 +173,10 @@ namespace BddUnity {
             maxCallback,
             _asyncCallbackPool.highUsed,
             maxAsyncCallback,
+            _stackedCallbackPool.highUsed,
+            maxStackedCallback,
+            _stackedAsyncCallbackPool.highUsed,
+            maxStackedAsyncCallback,
             _setupPool.highUsed,
             maxSetup);
 
@@ -180,10 +190,6 @@ namespace BddUnity {
             maxDepth,
             labelBufferSize,
             defaultTimeout,
-            maxBefore,
-            maxAsyncBefore,
-            maxAfter,
-            maxAsyncAfter,
             maxBeforeEach,
             maxAsyncBeforeEach,
             maxAfterEach,
@@ -244,6 +250,20 @@ namespace BddUnity {
           maxAsyncCallback,
           safeMemPools
         > _asyncCallbackPool;
+        Pool::Instance<
+          Entry::Interface,
+          Entry::StackedCallback::Instance,
+          Entry::StackedCallback::Params,
+          maxCallback,
+          safeMemPools
+        > _stackedCallbackPool;
+        Pool::Instance<
+          Entry::Interface,
+          Entry::StackedAsyncCallback::Instance,
+          Entry::StackedAsyncCallback::Params,
+          maxAsyncCallback,
+          safeMemPools
+        > _stackedAsyncCallbackPool;
         Pool::Instance<
           Entry::Describe::Setup,
           Entry::Describe::Setup,

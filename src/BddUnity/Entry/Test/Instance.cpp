@@ -23,7 +23,7 @@ namespace BddUnity {
 
         // add the beforeEach callbacks
         List beforeEach;
-        const Error * e = depth.beforeEach(beforeEach, _params.callbackPool, _params.asyncCallbackPool);
+        const Error * e = depth.beforeEach(beforeEach, _params.stackedCallbackPool, _params.stackedAsyncCallbackPool);
         if (e) {
           // failed to allocate beforeEach callbacks
           setError(*e, _params.label, "prepend beforeEach", _params.line);
@@ -34,7 +34,7 @@ namespace BddUnity {
 
         // add the afterEach callback
         List afterEach;
-        e = depth.afterEach(afterEach, _params.callbackPool, _params.asyncCallbackPool);
+        e = depth.afterEach(afterEach, _params.stackedCallbackPool, _params.stackedAsyncCallbackPool);
         if (e) {
           // failed to allocate before callbacks
           setError(*e, _params.label, "append afterEach", _params.line);

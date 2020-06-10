@@ -7,14 +7,14 @@
 #include "Interface.hpp"
 #include "Params.hpp"
 #include "../Entry/List.hpp"
-#include "../Entry/Callback/Params.hpp"
-#include "../Entry/AsyncCallback/Params.hpp"
+#include "../Entry/StackedCallback/Params.hpp"
+#include "../Entry/StackedAsyncCallback/Params.hpp"
 #include "../Memory/Pool/HasPool.hpp"
 #include "../Memory/Stack/Instance.hpp"
 #include "../Memory/Stack/Interface.hpp"
 
 #define BDD_UNITY_DEPTH_SYNC_SET(NAME, SET_NAME, ERROR_CODE, STACK)\
-  const Error * SET_NAME(const Entry::Callback::Params & params) override {\
+  const Error * SET_NAME(const Entry::StackedCallback::Params & params) override {\
     Frame & frame = *(_frameStack.current());\
     if (frame.NAME != Frame::CallbackType::NONE) {\
       setError(Error::Code::ERROR_CODE);\
@@ -24,7 +24,7 @@
     return STACK.push(params);\
   }
 #define BDD_UNITY_DEPTH_ASYNC_SET(NAME, SET_NAME, ERROR_CODE, STACK)\
-  const Error * SET_NAME(const Entry::AsyncCallback::Params & params) override {\
+  const Error * SET_NAME(const Entry::StackedAsyncCallback::Params & params) override {\
     Frame & frame = *(_frameStack.current());\
     if (frame.NAME != Frame::CallbackType::NONE) {\
       setError(Error::Code::ERROR_CODE);\
@@ -33,36 +33,13 @@
     frame.NAME = Frame::CallbackType::ASYNC;\
     return STACK.push(params);\
   }
-#define BDD_UNITY_DEPTH_SINGLE_CALLBACK(NAME, SET_NAME, ERROR_CODE, SYNC_STACK, ASYNC_STACK)\
+#define BDD_UNITY_DEPTH_CALLBACK_IMPL(NAME, SET_NAME, ERROR_CODE, SYNC_STACK, ASYNC_STACK, APPEND)\
   BDD_UNITY_DEPTH_SYNC_SET(NAME, SET_NAME, ERROR_CODE, SYNC_STACK)\
   BDD_UNITY_DEPTH_ASYNC_SET(NAME, SET_NAME, ERROR_CODE, ASYNC_STACK)\
   const Error * NAME(\
     Entry::List & list,\
-    Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,\
-    Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool\
-  ) override {\
-    size_t syncIndex = SYNC_STACK.currentIndex();\
-    size_t asyncIndex = ASYNC_STACK.currentIndex();\
-    const Frame & frame = *(_frameStack.current());\
-    return _createEntry(\
-      frame.NAME,\
-      list,\
-      true,\
-      syncPool,\
-      asyncPool,\
-      SYNC_STACK,\
-      ASYNC_STACK,\
-      syncIndex,\
-      asyncIndex\
-    );\
-  }
-#define BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(NAME, SET_NAME, ERROR_CODE, SYNC_STACK, ASYNC_STACK, APPEND)\
-  BDD_UNITY_DEPTH_SYNC_SET(NAME, SET_NAME, ERROR_CODE, SYNC_STACK)\
-  BDD_UNITY_DEPTH_ASYNC_SET(NAME, SET_NAME, ERROR_CODE, ASYNC_STACK)\
-  const Error * NAME(\
-    Entry::List & list,\
-    Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,\
-    Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool\
+    Memory::Pool::Interface<Entry::Interface, Entry::StackedCallback::Params> & syncPool,\
+    Memory::Pool::Interface<Entry::Interface, Entry::StackedAsyncCallback::Params> & asyncPool\
   ) override {\
     size_t syncIndex = 0;\
     size_t asyncIndex = 0;\
@@ -88,10 +65,6 @@ namespace BddUnity {
       size_t maxDepth,
       size_t labelBufferSize,
       long defaultTimeout,
-      size_t maxBefore,
-      size_t maxAsyncBefore,
-      size_t maxAfter,
-      size_t maxAsyncAfter,
       size_t maxBeforeEach,
       size_t maxAsyncBeforeEach,
       size_t maxAfterEach,
@@ -119,10 +92,6 @@ namespace BddUnity {
           const Error * ret = nullptr;
           const Error * e;
           const Frame & frame = *(_frameStack.current());
-          e = _popEntryParams(frame.before, _beforeStack, _asyncBeforeStack);
-          if (e) ret = e;
-          e = _popEntryParams(frame.after, _afterStack, _asyncAfterStack);
-          if (e) ret = e;
           e = _popEntryParams(frame.beforeEach, _beforeEachStack, _asyncBeforeEachStack);
           if (e) ret = e;
           e = _popEntryParams(frame.afterEach, _afterEachStack, _asyncAfterEachStack);
@@ -147,10 +116,8 @@ namespace BddUnity {
           return _currentLabel;
         }
 
-        BDD_UNITY_DEPTH_SINGLE_CALLBACK(before, setBefore, BEFORE_SET, _beforeStack, _asyncBeforeStack)
-        BDD_UNITY_DEPTH_SINGLE_CALLBACK(after, setAfter, AFTER_SET, _afterStack, _asyncAfterStack)
-        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(beforeEach, setBeforeEach, BEFORE_EACH_SET, _beforeEachStack, _asyncBeforeEachStack, true)
-        BDD_UNITY_DEPTH_MULTIPLE_CALLBACK(afterEach, setAfterEach, AFTER_EACH_SET, _afterEachStack, _asyncAfterEachStack, false)
+        BDD_UNITY_DEPTH_CALLBACK_IMPL(beforeEach, setBeforeEach, BEFORE_EACH_SET, _beforeEachStack, _asyncBeforeEachStack, true)
+        BDD_UNITY_DEPTH_CALLBACK_IMPL(afterEach, setAfterEach, AFTER_EACH_SET, _afterEachStack, _asyncAfterEachStack, false)
 
         const Error * setLoop(const Entry::Describe::Loop & loop) override {
           Frame & frame = *(_frameStack.current());
@@ -201,65 +168,33 @@ namespace BddUnity {
         > _frameStack;
 
         Memory::Stack::Instance<
-          Entry::Callback::Params,
-          Entry::Callback::Params,
-          Entry::Callback::Params,
-          maxBefore,
-          safe
-        > _beforeStack;
-
-        Memory::Stack::Instance<
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
-          maxAsyncBefore,
-          safe
-        > _asyncBeforeStack;
-
-        Memory::Stack::Instance<
-          Entry::Callback::Params,
-          Entry::Callback::Params,
-          Entry::Callback::Params,
-          maxAfter,
-          safe
-        > _afterStack;
-
-        Memory::Stack::Instance<
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
-          maxAsyncAfter,
-          safe
-        > _asyncAfterStack;
-
-        Memory::Stack::Instance<
-          Entry::Callback::Params,
-          Entry::Callback::Params,
-          Entry::Callback::Params,
+          Entry::StackedCallback::Params,
+          Entry::StackedCallback::Params,
+          Entry::StackedCallback::Params,
           maxBeforeEach,
           safe
         > _beforeEachStack;
 
         Memory::Stack::Instance<
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
+          Entry::StackedAsyncCallback::Params,
+          Entry::StackedAsyncCallback::Params,
+          Entry::StackedAsyncCallback::Params,
           maxAsyncBeforeEach,
           safe
         > _asyncBeforeEachStack;
 
         Memory::Stack::Instance<
-          Entry::Callback::Params,
-          Entry::Callback::Params,
-          Entry::Callback::Params,
+          Entry::StackedCallback::Params,
+          Entry::StackedCallback::Params,
+          Entry::StackedCallback::Params,
           maxAfterEach,
           safe
         > _afterEachStack;
 
         Memory::Stack::Instance<
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
-          Entry::AsyncCallback::Params,
+          Entry::StackedAsyncCallback::Params,
+          Entry::StackedAsyncCallback::Params,
+          Entry::StackedAsyncCallback::Params,
           maxAsyncAfterEach,
           safe
         > _asyncAfterEachStack;
@@ -306,8 +241,8 @@ namespace BddUnity {
 
         static const Error * _popEntryParams(
           const Frame::CallbackType type,
-          Memory::Stack::Interface<Entry::Callback::Params, Entry::Callback::Params> & syncStack,
-          Memory::Stack::Interface<Entry::AsyncCallback::Params, Entry::AsyncCallback::Params> & asyncStack
+          Memory::Stack::Interface<Entry::StackedCallback::Params, Entry::StackedCallback::Params> & syncStack,
+          Memory::Stack::Interface<Entry::StackedAsyncCallback::Params, Entry::StackedAsyncCallback::Params> & asyncStack
         ) {
           switch (type) {
             case Frame::CallbackType::NONE:
@@ -325,10 +260,10 @@ namespace BddUnity {
           const Frame::CallbackType type,
           Entry::List & list,
           const bool append,
-          Memory::Pool::Interface<Entry::Interface, Entry::Callback::Params> & syncPool,
-          Memory::Pool::Interface<Entry::Interface, Entry::AsyncCallback::Params> & asyncPool,
-          Memory::Stack::Interface<Entry::Callback::Params, Entry::Callback::Params> & syncStack,
-          Memory::Stack::Interface<Entry::AsyncCallback::Params, Entry::AsyncCallback::Params> & asyncStack,
+          Memory::Pool::Interface<Entry::Interface, Entry::StackedCallback::Params> & syncPool,
+          Memory::Pool::Interface<Entry::Interface, Entry::StackedAsyncCallback::Params> & asyncPool,
+          Memory::Stack::Interface<Entry::StackedCallback::Params, Entry::StackedCallback::Params> & syncStack,
+          Memory::Stack::Interface<Entry::StackedAsyncCallback::Params, Entry::StackedAsyncCallback::Params> & asyncStack,
           size_t & syncIndex,
           size_t & asyncIndex
         ) {
@@ -339,7 +274,7 @@ namespace BddUnity {
               return nullptr;
             case Frame::CallbackType::SYNC:
               {
-                const Entry::Callback::Params * params = syncStack.get(syncIndex++);
+                const Entry::StackedCallback::Params * params = syncStack.get(syncIndex++);
                 entry = syncPool.create(*params);
                 if (!entry) {
                   return &(syncPool.error);

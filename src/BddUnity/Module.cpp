@@ -36,6 +36,8 @@ namespace BddUnity {
       memory.getAsyncItPool(),
       memory.getCallbackPool(),
       memory.getAsyncCallbackPool(),
+      memory.getStackedCallbackPool(),
+      memory.getStackedAsyncCallbackPool(),
       memory.getSetupPool(),
       name,
       line,

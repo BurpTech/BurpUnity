@@ -2,7 +2,7 @@
 
 namespace BddUnity {
   namespace Entry {
-    namespace AsyncCallback {
+    namespace StackedAsyncCallback {
 
       Params::Params(const char * label, const int line, const f_async cb, const long timeout) :
         label(label),

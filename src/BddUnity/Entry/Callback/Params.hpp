@@ -6,18 +6,13 @@ namespace BddUnity {
   namespace Entry {
     namespace Callback {
 
-      class Params {
+      struct Params {
 
-        public:
+        using f_callback = std::function<void()>;
 
-          using f_callback = std::function<void()>;
-
-          Params(const char * label, const int line, const f_callback cb);
-          Params(const Params & params);
-
-          const char * label;
-          const int line;
-          const f_callback cb;
+        const char * label;
+        const int line;
+        const f_callback cb;
 
       };
 

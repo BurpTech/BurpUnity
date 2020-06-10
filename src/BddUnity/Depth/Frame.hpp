@@ -18,8 +18,6 @@ namespace BddUnity {
 
         const char * label;
         const long timeout;
-        CallbackType before;
-        CallbackType after;
         CallbackType beforeEach;
         CallbackType afterEach;
         bool hasLoop;

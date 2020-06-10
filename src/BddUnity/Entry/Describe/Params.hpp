@@ -10,6 +10,8 @@
 #include "../AsyncIt/Params.hpp"
 #include "../Callback/Params.hpp"
 #include "../AsyncCallback/Params.hpp"
+#include "../StackedCallback/Params.hpp"
+#include "../StackedAsyncCallback/Params.hpp"
 #include "Setup.hpp"
 
 namespace BddUnity {
@@ -29,6 +31,8 @@ namespace BddUnity {
         Memory::Pool::Interface<Interface, AsyncIt::Params> & asyncItPool;
         Memory::Pool::Interface<Interface, Callback::Params> & callbackPool;
         Memory::Pool::Interface<Interface, AsyncCallback::Params> & asyncCallbackPool;
+        Memory::Pool::Interface<Interface, StackedCallback::Params> & stackedCallbackPool;
+        Memory::Pool::Interface<Interface, StackedAsyncCallback::Params> & stackedAsyncCallbackPool;
         Memory::Pool::Interface<Setup, Setup> & setupPool;
         const char * thing;
         const int line;

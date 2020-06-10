@@ -6,7 +6,7 @@
 
 namespace BddUnity {
   namespace Entry {
-    namespace Callback {
+    namespace StackedCallback {
 
       class Instance : public Interface, public Memory::Pool::HasPool<Interface, Params> {
 
@@ -16,7 +16,7 @@ namespace BddUnity {
 
         private:
 
-          const Params _params;
+          const Params & _params;
 
           void _run(List & list, Depth::Interface & depth, Timeout & timeout, const f_done & done) override;
           const Error * _free() override;

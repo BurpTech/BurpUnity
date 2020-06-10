@@ -16,6 +16,12 @@
   void NAME(const int line, const AsyncCallback::Params::f_async cb, const long timeout = Timeout::INHERIT_TIMEOUT);\
   void NAME(const AsyncCallback::Params::f_async cb, const long timeout = Timeout::INHERIT_TIMEOUT)
 
+#define BDD_UNITY_ENTRY_DESCRIBE_DECLARE_STACKED_CALLBACK(NAME)\
+  void NAME(const int line, const StackedCallback::Params::f_callback cb);\
+  void NAME(const StackedCallback::Params::f_callback cb);\
+  void NAME(const int line, const StackedAsyncCallback::Params::f_async cb, const long timeout = Timeout::INHERIT_TIMEOUT);\
+  void NAME(const StackedAsyncCallback::Params::f_async cb, const long timeout = Timeout::INHERIT_TIMEOUT)
+
 namespace BddUnity {
   namespace Entry {
     namespace Describe {
@@ -28,8 +34,8 @@ namespace BddUnity {
 
           BDD_UNITY_ENTRY_DESCRIBE_DECLARE_CALLBACK(before);
           BDD_UNITY_ENTRY_DESCRIBE_DECLARE_CALLBACK(after);
-          BDD_UNITY_ENTRY_DESCRIBE_DECLARE_CALLBACK(beforeEach);
-          BDD_UNITY_ENTRY_DESCRIBE_DECLARE_CALLBACK(afterEach);
+          BDD_UNITY_ENTRY_DESCRIBE_DECLARE_STACKED_CALLBACK(beforeEach);
+          BDD_UNITY_ENTRY_DESCRIBE_DECLARE_STACKED_CALLBACK(afterEach);
 
           void describe(const char * thing, const Params::f_describe describe, const long timeout = Timeout::INHERIT_TIMEOUT);
           void describe(const char * thing, const int line, const Params::f_describe describe, const long timeout = Timeout::INHERIT_TIMEOUT);

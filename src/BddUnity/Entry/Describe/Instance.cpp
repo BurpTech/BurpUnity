@@ -4,9 +4,48 @@
 #include "../Pop/Params.hpp"
 #include "../../Depth/Frame.hpp"
 
-#define IMPLEMENT_CALLBACK(NAME, DEPTH_FUNCTION)\
+#define IMPLEMENT_CALLBACK(NAME, ERROR_CODE)\
   void Instance::NAME(const int line, const Callback::Params::f_callback cb) {\
-    Callback::Params params(\
+    if (_##NAME) {\
+      setError(Error::Code::ERROR_CODE, _params.thing, line);\
+      return;\
+    }\
+    Callback::Params params = {\
+      _params.thing,\
+      line,\
+      cb\
+    };\
+    _##NAME = _params.callbackPool.create(params);\
+    if (!_##NAME) {\
+      setError(_params.callbackPool.error, _params.thing, #NAME, line);\
+    }\
+  }\
+  void Instance::NAME(const Callback::Params::f_callback cb) {\
+    NAME(0, cb);\
+  }\
+  void Instance::NAME(const int line, const AsyncCallback::Params::f_async cb, const long timeout) {\
+    if (_##NAME) {\
+      setError(Error::Code::ERROR_CODE, _params.thing, line);\
+      return;\
+    }\
+    AsyncCallback::Params params = {\
+      _params.thing,\
+      line,\
+      cb,\
+      timeout\
+    };\
+    _##NAME = _params.asyncCallbackPool.create(params);\
+    if (!_##NAME) {\
+      setError(_params.asyncCallbackPool.error, _params.thing, #NAME, line);\
+    }\
+  }\
+  void Instance::NAME(const AsyncCallback::Params::f_async cb, const long timeout) {\
+    NAME(0, cb, timeout);\
+  }
+
+#define IMPLEMENT_STACKED_CALLBACK(NAME, DEPTH_FUNCTION)\
+  void Instance::NAME(const int line, const StackedCallback::Params::f_callback cb) {\
+    StackedCallback::Params params(\
       _params.thing,\
       line,\
       cb\
@@ -14,11 +53,11 @@
     const Error * e = _params.depth.DEPTH_FUNCTION(params);\
     if (e) setError(*e, "before", line);\
   }\
-  void Instance::NAME(const Callback::Params::f_callback cb) {\
+  void Instance::NAME(const StackedCallback::Params::f_callback cb) {\
     NAME(0, cb);\
   }\
-  void Instance::NAME(const int line, const AsyncCallback::Params::f_async cb, const long timeout) {\
-    AsyncCallback::Params params(\
+  void Instance::NAME(const int line, const StackedAsyncCallback::Params::f_async cb, const long timeout) {\
+    StackedAsyncCallback::Params params(\
       _params.thing,\
       line,\
       cb,\
@@ -27,7 +66,7 @@
     const Error * e = _params.depth.DEPTH_FUNCTION(params);\
     if (e) setError(*e, "before", line);\
   }\
-  void Instance::NAME(const AsyncCallback::Params::f_async cb, const long timeout) {\
+  void Instance::NAME(const StackedAsyncCallback::Params::f_async cb, const long timeout) {\
     NAME(0, cb, timeout);\
   }
 
@@ -47,10 +86,10 @@ namespace BddUnity {
         return Memory::Pool::HasPool<Interface, Params>::free(this);
       }
 
-      IMPLEMENT_CALLBACK(before, setBefore)
-      IMPLEMENT_CALLBACK(after, setAfter)
-      IMPLEMENT_CALLBACK(beforeEach, setBeforeEach)
-      IMPLEMENT_CALLBACK(afterEach, setAfterEach)
+      IMPLEMENT_CALLBACK(before, BEFORE_SET)
+      IMPLEMENT_CALLBACK(after, AFTER_SET)
+      IMPLEMENT_STACKED_CALLBACK(beforeEach, setBeforeEach)
+      IMPLEMENT_STACKED_CALLBACK(afterEach, setAfterEach)
 
       void Instance::describe(const char * thing, const Params::f_describe describe, const long timeout) {
         Instance::describe(thing, 0, describe, timeout);
@@ -65,6 +104,8 @@ namespace BddUnity {
           _params.asyncItPool,
           _params.callbackPool,
           _params.asyncCallbackPool,
+          _params.stackedCallbackPool,
+          _params.stackedAsyncCallbackPool,
           _params.setupPool,
           thing,
           line,
@@ -182,26 +223,16 @@ namespace BddUnity {
         }
 
         // add the before callback
-        List before;
-        e = depth.before(before, _params.callbackPool, _params.asyncCallbackPool);
-        if (e) {
-          // failed to allocate before callbacks
-          setError(*e, "prepend before", _params.line);
-          done(&error);
-          return;
+        if (_before) {
+          _list.prepend(_before);
+          _before = nullptr;
         }
-        _list.prepend(before);
 
         // add the after callback
-        List after;
-        e = depth.after(after, _params.callbackPool, _params.asyncCallbackPool);
-        if (e) {
-          // failed to allocate before callbacks
-          setError(*e, "append after", _params.line);
-          done(&error);
-          return;
+        if (_after) {
+          _list.append(_after);
+          _after = nullptr;
         }
-        _list.append(after);
 
         // append a pop to the entries
         Pop::Params params = {};
@@ -228,8 +259,8 @@ namespace BddUnity {
         Test::Params params = {
           label,
           line,
-          _params.callbackPool,
-          _params.asyncCallbackPool,
+          _params.stackedCallbackPool,
+          _params.stackedAsyncCallbackPool,
           entry
         };
         Interface * test = _params.testPool.create(params);

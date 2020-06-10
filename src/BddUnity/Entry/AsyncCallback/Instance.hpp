@@ -16,7 +16,7 @@ namespace BddUnity {
 
         private:
 
-          const Params & _params;
+          const Params _params;
           Params::f_done _done;
 
           void _run(List & list, Depth::Interface & depth, Timeout & timeout, const Interface::f_done & done) override;

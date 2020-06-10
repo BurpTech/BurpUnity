@@ -2,7 +2,7 @@
 
 namespace BddUnity {
   namespace Entry {
-    namespace Callback {
+    namespace StackedCallback {
 
       Params::Params(const char * label, const int line, const f_callback cb) :
         label(label),
