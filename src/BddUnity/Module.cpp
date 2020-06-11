@@ -38,7 +38,9 @@ namespace BddUnity {
 
   Module::~Module() {
     _list.freeAll();
-    _depth->free();
+    if (_depth) {
+      _depth->free();
+    }
   }
 
   void Module::_include(f_include include) {
