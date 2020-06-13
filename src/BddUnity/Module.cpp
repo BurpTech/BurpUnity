@@ -133,7 +133,7 @@ namespace BddUnity {
   }
 
   const Depth::Usage Module::getUsage() const {
-    return _depth->getUsage();
+    return _usage;
   }
 
   void Module::_done(const unsigned long count, const Error * e) {
@@ -186,6 +186,11 @@ namespace BddUnity {
   }
 
   void Module::_end() {
+    if (_depth) {
+      _usage = _depth->getUsage();
+      _depth->free();
+      _depth = nullptr;
+    }
     _state = State::FINISHED;
   }
 

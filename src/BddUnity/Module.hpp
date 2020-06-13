@@ -61,6 +61,7 @@ namespace BddUnity {
       Timeout _currentTimeout;
       State _state;
       unsigned long _count = 0;
+      Depth::Usage _usage;
 
       void _next();
       void _done(const unsigned long count, const Error * e);
