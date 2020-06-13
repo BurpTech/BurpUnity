@@ -31,24 +31,26 @@ namespace BddUnity {
         if (isRunning()) {
           _state = Runnable::State::FINISHED;
           for (auto runnable : _runnables) {
-            switch (runnable->getState()) {
-              case Runnable::State::FINISHED:
-                // check for errors
-                if (runnable->hasError) {
-                  setError(runnable->error);
-                  // stop on error
+            if (runnable) {
+              switch (runnable->getState()) {
+                case Runnable::State::FINISHED:
+                  // check for errors
+                  if (runnable->hasError) {
+                    setError(runnable->error);
+                    // stop on error
+                    return;
+                  }
+                  break;
+                case Runnable::State::IDLE:
+                  _state = Runnable::State::RUNNING;
+                  _setup(runnable);
+                  break;
+                case Runnable::State::RUNNING:
+                  _state = Runnable::State::RUNNING;
+                  runnable->loop();
+                  //we only run one module at a time
                   return;
-                }
-                break;
-              case Runnable::State::IDLE:
-                _state = Runnable::State::RUNNING;
-                _setup(runnable);
-                break;
-              case Runnable::State::RUNNING:
-                _state = Runnable::State::RUNNING;
-                runnable->loop();
-                //we only run one module at a time
-                return;
+              }
             }
           }
         }
