@@ -18,6 +18,7 @@ namespace BddUnity {
       virtual void setup(Memory::Interface & memory) = 0;
       virtual void loop() = 0;
       virtual State getState() = 0;
+      virtual const Depth::Usage getUsage() const = 0;
       bool isIdle();
       bool isRunning();
       bool isFinished();

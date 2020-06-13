@@ -6,6 +6,7 @@
 #include "BddUnity/Runner.hpp"
 #include "BddUnity/Memory/Instance.hpp"
 #include "BddUnity/Module.hpp"
+#include "BddUnity/Usage.hpp"
 #include <cstddef>
 
 #define bu_params(S) S, __LINE__

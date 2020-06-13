@@ -34,7 +34,7 @@ namespace BddUnity {
       void loop() override;
       Runnable::State getState() override;
 
-      int snprintMaxDepth(char * buffer, size_t size);
+      const Depth::Usage getUsage() const override;
 
     private:
 

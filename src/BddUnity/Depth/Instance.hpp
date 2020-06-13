@@ -153,8 +153,15 @@ namespace BddUnity {
           return ret;
         }
 
-        const size_t getMaxDepth() override {
-          return maxDepth;
+        const Usage getUsage() const override {
+          return {
+            _frameStack.highUsed,
+            _beforeEachStack.highUsed,
+            _asyncBeforeEachStack.highUsed,
+            _afterEachStack.highUsed,
+            _asyncAfterEachStack.highUsed,
+            _loopStack.highUsed
+          };
         }
 
       private:

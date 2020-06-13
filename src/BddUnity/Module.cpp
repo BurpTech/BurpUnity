@@ -132,18 +132,8 @@ namespace BddUnity {
     }
   }
 
-  int Module::snprintMaxDepth(char * buffer, size_t size) {
-
-    const char * format = 
-      "--------------------\n"
-      "BddUnity: max depth:\n"
-      "--------------------\n"
-      "maximum depth reached (BDD_UNITY_MAX_DEPTH): %lu (%d)\n";
-
-    return snprintf(buffer, size, format,
-      _depth->highUsed,
-      _depth->getMaxDepth());
-
+  const Depth::Usage Module::getUsage() const {
+    return _depth->getUsage();
   }
 
   void Module::_done(const unsigned long count, const Error * e) {

@@ -87,39 +87,13 @@ namespace BddUnity {
           return _setupPool;
         }
 
-        int snprintParams(char * buffer, size_t size) override {
-
-          const char * format = 
-            "----------------------------\n"
-            "BddUnity: memory parameters:\n"
-            "----------------------------\n"
-            "safeMemPools: %d\n"
-            "maxModule: %d\n"
-            "maxDepth: %d\n"
-            "labelBufferSize: %d\n"
-            "defaultTimeout: %d\n"
-            "maxDescribe: %d\n"
-            "maxPop: %d\n"
-            "maxTest: %d\n"
-            "maxIt: %d\n"
-            "maxAsyncIt: %d\n"
-            "maxCallback: %d\n"
-            "maxAsyncCallback: %d\n"
-            "maxStackedCallback: %d\n"
-            "maxStackedAsyncCallback: %d\n"
-            "maxBeforeEach: %d\n"
-            "maxAsyncBeforeEach: %d\n"
-            "maxAfterEach: %d\n"
-            "maxAsyncAfterEach: %d\n"
-            "maxSetup: %d\n"
-            "maxLoop: %d\n";
-
-          return snprintf(buffer, size, format,
+        const Params getParams() const override {
+          return {
+            labelBufferSize,
+            defaultTimeout,
             safeMemPools,
             maxModule,
             maxDepth,
-            labelBufferSize,
-            defaultTimeout,
             maxDescribe,
             maxPop,
             maxTest,
@@ -134,52 +108,24 @@ namespace BddUnity {
             maxAfterEach,
             maxAsyncAfterEach,
             maxSetup,
-            maxLoop);
-
+            maxLoop
+          };
         }
 
-        int snprintUsage(char * buffer, size_t size) override {
-
-          const char * format = 
-            "-----------------------\n"
-            "BddUnity: memory usage:\n"
-            "-----------------------\n"
-            "maximum modules allocated (BDD_UNITY_MAX_MODULE): %lu (%d)\n"
-            "maximum describes allocated (BDD_UNITY_MAX_DESCRIBE): %lu (%d)\n"
-            "maximum pops allocated (BDD_UNITY_MAX_POP): %lu (%d)\n"
-            "maximum tests allocated (BDD_UNITY_MAX_TEST): %lu (%d)\n"
-            "maximum its allocated (BDD_UNITY_MAX_IT): %lu (%d)\n"
-            "maximum async its allocated (BDD_UNITY_MAX_ASYNC_IT): %lu (%d)\n"
-            "maximum callbacks allocated (BDD_UNITY_MAX_CALLBACK): %lu (%d)\n"
-            "maximum async callbacks allocated (BDD_UNITY_MAX_ASYNC_CALLBACK): %lu (%d)\n"
-            "maximum stacked callbacks allocated (BDD_UNITY_MAX_STACKED_CALLBACK): %lu (%d)\n"
-            "maximum stacked async callbacks allocated (BDD_UNITY_MAX_STACKED_ASYNC_CALLBACK): %lu (%d)\n"
-            "maximum setups allocated (BDD_UNITY_MAX_SETUP): %lu (%d)\n";
-
-          return snprintf(buffer, size, format,
+        const Usage getUsage() const override {
+          return {
             _depthPool.highUsed,
-            maxModule,
             _describePool.highUsed,
-            maxDescribe,
             _popPool.highUsed,
-            maxPop,
             _testPool.highUsed,
-            maxTest,
             _itPool.highUsed,
-            maxIt,
             _asyncItPool.highUsed,
-            maxAsyncIt,
             _callbackPool.highUsed,
-            maxCallback,
             _asyncCallbackPool.highUsed,
-            maxAsyncCallback,
             _stackedCallbackPool.highUsed,
-            maxStackedCallback,
             _stackedAsyncCallbackPool.highUsed,
-            maxStackedAsyncCallback,
-            _setupPool.highUsed,
-            maxSetup);
-
+            _setupPool.highUsed
+          };
         }
 
       private:

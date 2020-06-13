@@ -19,8 +19,10 @@ Memory memory;
 bool running = true;
 int status;
 
+
 void setup() {
   UNITY_BEGIN();
+  BddUnity::Usage::printParams(memory);
   runner.setup(memory);
 }
 
@@ -28,6 +30,7 @@ void loop() {
   if (running) {
     runner.loop();
     if (runner.isFinished()) {
+      BddUnity::Usage::printUsage(memory, runner);
       status = UNITY_END();
       running = false;
     }
@@ -41,3 +44,4 @@ int main() {
   }
   return status;
 }
+

@@ -1,7 +1,10 @@
 #pragma once
 
 #include <array>
+#include <algorithm>
+#include <cstddef>
 #include <functional>
+#include "Depth/Interface.hpp"
 #include "Runnable.hpp"
 
 namespace BddUnity {
@@ -58,6 +61,28 @@ namespace BddUnity {
 
       Runnable::State getState() override {
         return _state;
+      }
+
+#define MAX_VALUE(FIRST, SECOND, NAME) std::max(FIRST.NAME, SECOND.NAME)
+
+      const Depth::Usage getUsage() const override {
+        using f_max = std::function<Depth::Usage(const Depth::Usage & first, const Depth::Usage & second)>;
+        f_max max = [](const Depth::Usage & first, const Depth::Usage & second) {
+          Depth::Usage ret = {
+            MAX_VALUE(first, second, maxDepth),
+            MAX_VALUE(first, second, maxBeforeEach),
+            MAX_VALUE(first, second, maxAsyncBeforeEach),
+            MAX_VALUE(first, second, maxAfterEach),
+            MAX_VALUE(first, second, maxAsyncAfterEach),
+            MAX_VALUE(first, second, maxLoop)
+          };
+          return ret;
+        };
+        Depth::Usage usage = {0,0,0,0,0,0};
+        for (auto runnable : _runnables) {
+          usage = max(usage, runnable->getUsage());
+        }
+        return usage;
       }
 
     private:

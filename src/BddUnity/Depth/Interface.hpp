@@ -25,6 +25,15 @@ namespace BddUnity {
 
   namespace Depth {
 
+    struct Usage {
+      size_t maxDepth;
+      size_t maxBeforeEach;
+      size_t maxAsyncBeforeEach;
+      size_t maxAfterEach;
+      size_t maxAsyncAfterEach;
+      size_t maxLoop;
+    };
+
     class Interface {
       public:
         unsigned long highUsed = 0;
@@ -38,7 +47,7 @@ namespace BddUnity {
         BDD_UNITY_DEPTH_CALLBACK(afterEach, setAfterEach);
         virtual const Error * setLoop(const Entry::Describe::Loop & loop) = 0;
         virtual void loop() = 0;
-        virtual const size_t getMaxDepth() = 0;
+        virtual const Usage getUsage() const = 0;
     };
 
   }
