@@ -9,13 +9,12 @@
 #include "module1.hpp"
 #include "module2.hpp"
 
-Runnable * runnables[] = {
+Runnables<2> runnables = {
   &Module1::tests,
   &Module2::tests,
-  nullptr
 };
 
-Runner runner(runnables);
+Runner<2> runner(runnables);
 Memory memory;
 bool running = true;
 int status;

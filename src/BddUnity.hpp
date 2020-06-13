@@ -6,6 +6,7 @@
 #include "BddUnity/Runner.hpp"
 #include "BddUnity/Memory/Instance.hpp"
 #include "BddUnity/Module.hpp"
+#include <cstddef>
 
 #define bu_params(S) S, __LINE__
 
@@ -36,7 +37,10 @@ BDD_UNITY_MAX_SETUP,
 BDD_UNITY_MAX_LOOP
 >;
 using Runnable = BddUnity::Runnable;
-using Runner = BddUnity::Runner;
+template <size_t size>
+using Runnables = BddUnity::Runnables<size>;
+template <size_t size>
+using Runner = BddUnity::Runner<size>;
 using Module = BddUnity::Module;
 using Describe = BddUnity::Entry::Describe::Instance;
 using f_done = BddUnity::Entry::AsyncIt::Params::f_done;
