@@ -10,8 +10,8 @@
 #include "module2.hpp"
 
 Runnable * runnables[] = {
-  &Module1::module,
-  &Module2::module,
+  &Module1::tests,
+  &Module2::tests,
   nullptr
 };
 

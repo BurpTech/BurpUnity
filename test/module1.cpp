@@ -1,55 +1,23 @@
 #include <stdio.h>
-#include <functional>
 #include <unity.h>
+#include <Callback.hpp>
+#include "module1.hpp"
 #include "module2.hpp"
 
-namespace Module2 {
-
-  class Callback {
-    public:
-
-      using f_cb = std::function<void()>;
-
-      Callback() :
-        _cb(nullptr)
-      {}
-
-      void setup() {
-        printf("Callback::setup\n");
-      }
-
-      void loop() {
-        // printf("Callback::loop\n");
-        if (_cb) {
-          _cb();
-          _cb = nullptr;
-        }
-      }
-
-      void callback(f_cb cb) {
-        _cb = cb;
-      }
-
-    private:
-
-      f_cb _cb;
-
-  };
+namespace Module1 {
 
   // As we need to access this asynchronously it
   // has to be global so that it doesn't go out of
   // scope
   Callback callback;
 
-  Module module("module 2", [](Describe & describe) {
+  Module tests("module 1", [](Describe & describe) {
 
     describe.setup([&]() {
       printf("setup\n");
-      callback.setup();
     });
 
     describe.loop([&]() {
-      // printf("loop\n");
       callback.loop();
     });
 
@@ -62,14 +30,14 @@ namespace Module2 {
     });
 
     describe.beforeEach([&](f_done & done) {
-      callback.callback([&]() {
+      callback.once([&]() {
         printf("beforeEach\n");
         done();
       });
     });
 
     describe.afterEach([&](f_done & done) {
-      callback.callback([&]() {
+      callback.once([&]() {
         printf("afterEach\n");
         done();
       });
@@ -93,15 +61,17 @@ namespace Module2 {
         // printf("another loop\n");
       });
 
+      describe.include(Module2::tests);
+
       describe.before([&](f_done & done) {
-        callback.callback([&]() {
+        callback.once([&]() {
           printf("another before\n");
           done();
         });
       });
 
       describe.after([&](f_done & done) {
-        callback.callback([&]() {
+        callback.once([&]() {
           printf("another after\n");
           done();
         });
@@ -121,7 +91,7 @@ namespace Module2 {
 
       describe.async("async", [&](Async & async, f_done & done) {
 
-        callback.callback([&]() {
+        callback.once([&]() {
 
           async.it("should pass", [&]() {
             TEST_ASSERT_TRUE(true);
