@@ -47,7 +47,8 @@ namespace BddUnity {
                 case Runnable::State::IDLE:
                   _state = Runnable::State::RUNNING;
                   _setup(runnable);
-                  break;
+                  //we only run one module at a time
+                  return;
                 case Runnable::State::RUNNING:
                   _state = Runnable::State::RUNNING;
                   runnable->loop();

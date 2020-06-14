@@ -30,9 +30,11 @@ namespace BddUnity {
               }
 
               // check that the address has been allocated.
+              const size_t difference = (char *)address - (char *)_pool;
               if (!(
                 address >= _pool &&
-                address < _pool + (_currentUsed * sizeof(InternalType))
+                address < _pool + (Interface<ReturnType, Params>::highUsed * sizeof(InternalType)) &&
+                difference % sizeof(InternalType) == 0
               )) {
                 Interface<ReturnType, Params>::setError(Error::Code::NOT_ALLOC);
                 return &(Interface<ReturnType, Params>::error);
