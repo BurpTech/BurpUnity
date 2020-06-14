@@ -200,14 +200,14 @@ namespace BddUnity {
           Entry::Interface,
           Entry::StackedCallback::Instance,
           Entry::StackedCallback::Params,
-          maxCallback,
+          maxStackedCallback,
           safeMemPools
         > _stackedCallbackPool;
         Pool::Instance<
           Entry::Interface,
           Entry::StackedAsyncCallback::Instance,
           Entry::StackedAsyncCallback::Params,
-          maxAsyncCallback,
+          maxStackedAsyncCallback,
           safeMemPools
         > _stackedAsyncCallbackPool;
         Pool::Instance<

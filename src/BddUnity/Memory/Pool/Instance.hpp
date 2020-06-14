@@ -76,8 +76,7 @@ namespace BddUnity {
             }
 
             // send the next address from the pool
-            _currentUsed++;
-            void * ret = &(_pool[_currentUsed]);
+            void * ret = &(_pool[_currentUsed++]);
             Interface<ReturnType, Params>::highUsed =
               _currentUsed > Interface<ReturnType, Params>::highUsed ?
               _currentUsed :
