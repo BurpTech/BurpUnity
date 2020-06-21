@@ -3,26 +3,26 @@
 #include <Arduino.h>
 #endif
 
-#define BDD_UNITY_MAX_MODULE 1
-#define BDD_UNITY_MAX_DESCRIBE 2
-#define BDD_UNITY_MAX_POP 4
-#define BDD_UNITY_MAX_TEST 4
-#define BDD_UNITY_MAX_IT 3
-#define BDD_UNITY_MAX_ASYNC_IT 2
-#define BDD_UNITY_MAX_CALLBACK 3
-#define BDD_UNITY_MAX_ASYNC_CALLBACK 3
-#define BDD_UNITY_MAX_STACKED_CALLBACK 4
-#define BDD_UNITY_MAX_STACKED_ASYNC_CALLBACK 4
-#define BDD_UNITY_MAX_SETUP 1
-#define BDD_UNITY_MAX_DEPTH 4
-#define BDD_UNITY_MAX_BEFORE_EACH 2
-#define BDD_UNITY_MAX_ASYNC_BEFORE_EACH 2
-#define BDD_UNITY_MAX_AFTER_EACH 2
-#define BDD_UNITY_MAX_ASYNC_AFTER_EACH 2
-#define BDD_UNITY_MAX_LOOP 4
+#define BURP_UNITY_MAX_MODULE 1
+#define BURP_UNITY_MAX_DESCRIBE 2
+#define BURP_UNITY_MAX_POP 4
+#define BURP_UNITY_MAX_TEST 4
+#define BURP_UNITY_MAX_IT 3
+#define BURP_UNITY_MAX_ASYNC_IT 2
+#define BURP_UNITY_MAX_CALLBACK 3
+#define BURP_UNITY_MAX_ASYNC_CALLBACK 3
+#define BURP_UNITY_MAX_STACKED_CALLBACK 4
+#define BURP_UNITY_MAX_STACKED_ASYNC_CALLBACK 4
+#define BURP_UNITY_MAX_SETUP 1
+#define BURP_UNITY_MAX_DEPTH 4
+#define BURP_UNITY_MAX_BEFORE_EACH 2
+#define BURP_UNITY_MAX_ASYNC_BEFORE_EACH 2
+#define BURP_UNITY_MAX_AFTER_EACH 2
+#define BURP_UNITY_MAX_ASYNC_AFTER_EACH 2
+#define BURP_UNITY_MAX_LOOP 4
 
 #include <unity.h>
-#include <BddUnity.hpp>
+#include <BurpUnity.hpp>
 
 #include "module1.hpp"
 #include "module2.hpp"
@@ -40,7 +40,7 @@ int status;
 
 void setup() {
   UNITY_BEGIN();
-  BddUnity::Usage::printParams(memory);
+  BurpUnity::Usage::printParams(memory);
   runner.setup(memory);
 }
 
@@ -48,8 +48,8 @@ void loop() {
   if (running) {
     runner.loop();
     if (runner.isFinished()) {
-      BddUnity::Usage::printUsage(memory, runner);
-      BddUnity::Usage::printUsageDefines(memory, runner);
+      BurpUnity::Usage::printUsage(memory, runner);
+      BurpUnity::Usage::printUsageDefines(memory, runner);
       status = UNITY_END();
       running = false;
     }

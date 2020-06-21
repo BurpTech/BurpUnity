@@ -1,11 +1,11 @@
 {
-  "name": "BddUnity",
+  "name": "BurpUnity",
   "keywords": "testing, BDD, Unity",
   "description": "Use BDD grammar with Unity assertions",
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/pghalliday/BddUnity"
+    "url": "https://github.com/pghalliday/BurpUnity"
   },
   "authors":
   [
