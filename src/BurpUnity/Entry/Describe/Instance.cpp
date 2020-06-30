@@ -8,17 +8,17 @@
 #define IMPLEMENT_CALLBACK(NAME, ERROR_CODE)\
   void Instance::NAME(const int line, const Callback::Params::f_callback cb) {\
     if (_##NAME) {\
-      setError(Error::Code::ERROR_CODE, _params.thing, line);\
+      setError(Error::Code::ERROR_CODE, #NAME, line);\
       return;\
     }\
     Callback::Params params = {\
-      _params.thing,\
+      #NAME,\
       line,\
       cb\
     };\
     _##NAME = _params.callbackPool.create(params);\
     if (!_##NAME) {\
-      setError(_params.callbackPool.error, _params.thing, #NAME, line);\
+      setError(_params.callbackPool.error, #NAME, line);\
     }\
   }\
   void Instance::NAME(const Callback::Params::f_callback cb) {\
@@ -26,18 +26,18 @@
   }\
   void Instance::NAME(const int line, const AsyncCallback::Params::f_async cb, const long timeout) {\
     if (_##NAME) {\
-      setError(Error::Code::ERROR_CODE, _params.thing, line);\
+      setError(Error::Code::ERROR_CODE, #NAME, line);\
       return;\
     }\
     AsyncCallback::Params params = {\
-      _params.thing,\
+      #NAME,\
       line,\
       cb,\
       timeout\
     };\
     _##NAME = _params.asyncCallbackPool.create(params);\
     if (!_##NAME) {\
-      setError(_params.asyncCallbackPool.error, _params.thing, #NAME, line);\
+      setError(_params.asyncCallbackPool.error, #NAME, line);\
     }\
   }\
   void Instance::NAME(const AsyncCallback::Params::f_async cb, const long timeout) {\
@@ -47,25 +47,25 @@
 #define IMPLEMENT_STACKED_CALLBACK(NAME, DEPTH_FUNCTION)\
   void Instance::NAME(const int line, const StackedCallback::Params::f_callback cb) {\
     StackedCallback::Params params = {\
-      _params.thing,\
+      #NAME,\
       line,\
       cb\
     };\
     const Error * e = _params.depth.DEPTH_FUNCTION(params);\
-    if (e) setError(*e, "before", line);\
+    if (e) setError(*e, #NAME, line);\
   }\
   void Instance::NAME(const StackedCallback::Params::f_callback cb) {\
     NAME(0, cb);\
   }\
   void Instance::NAME(const int line, const StackedAsyncCallback::Params::f_async cb, const long timeout) {\
     StackedAsyncCallback::Params params = {\
-      _params.thing,\
+      #NAME,\
       line,\
       cb,\
       timeout\
     };\
     const Error * e = _params.depth.DEPTH_FUNCTION(params);\
-    if (e) setError(*e, "before", line);\
+    if (e) setError(*e, #NAME, line);\
   }\
   void Instance::NAME(const StackedAsyncCallback::Params::f_async cb, const long timeout) {\
     NAME(0, cb, timeout);\
