@@ -6,7 +6,7 @@
 #endif
 
 #define PRINT_FIELD(FORMAT, OBJECT, NAME) printf(#NAME ": " FORMAT "\n", OBJECT.NAME)
-#define PRINT_FIELD_DEFINE(DEFINE, FORMAT, OBJECT, NAME) printf("#define " #DEFINE " " FORMAT "\n", OBJECT.NAME)
+#define PRINT_FIELD_DEFINE(DEFINE, FORMAT, OBJECT, NAME, MINIMUM) printf("#define " #DEFINE " " FORMAT "\n", OBJECT.NAME > MINIMUM ? OBJECT.NAME : MINIMUM)
 
 namespace BurpUnity {
   namespace Usage {
@@ -77,34 +77,34 @@ namespace BurpUnity {
       printf("-----------------------\n");
     }
 
-    void printUsageDefines(const Memory::Interface & memory, const Runnable & runnable) {
-      printMemoryUsageDefines(memory);
-      printDepthUsageDefines(runnable);
+    void printUsageDefines(const Memory::Interface & memory, const Runnable & runnable, const size_t minimum) {
+      printMemoryUsageDefines(memory, minimum);
+      printDepthUsageDefines(runnable, minimum);
     }
 
-    void printMemoryUsageDefines(const Memory::Interface & memory) {
+    void printMemoryUsageDefines(const Memory::Interface & memory, const size_t minimum) {
       BurpUnity::Memory::Usage usage = memory.getUsage();
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_MODULE, BURP_SIZE_T_FORMAT, usage, maxModule);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_DESCRIBE, BURP_SIZE_T_FORMAT, usage, maxDescribe);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_POP, BURP_SIZE_T_FORMAT, usage, maxPop);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_TEST, BURP_SIZE_T_FORMAT, usage, maxTest);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_IT, BURP_SIZE_T_FORMAT, usage, maxIt);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_IT, BURP_SIZE_T_FORMAT, usage, maxAsyncIt);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxCallback);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxAsyncCallback);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_STACKED_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxStackedCallback);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_STACKED_ASYNC_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxStackedAsyncCallback);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_SETUP, BURP_SIZE_T_FORMAT, usage, maxSetup);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_MODULE, BURP_SIZE_T_FORMAT, usage, maxModule, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_DESCRIBE, BURP_SIZE_T_FORMAT, usage, maxDescribe, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_POP, BURP_SIZE_T_FORMAT, usage, maxPop, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_TEST, BURP_SIZE_T_FORMAT, usage, maxTest, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_IT, BURP_SIZE_T_FORMAT, usage, maxIt, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_IT, BURP_SIZE_T_FORMAT, usage, maxAsyncIt, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxCallback, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxAsyncCallback, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_STACKED_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxStackedCallback, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_STACKED_ASYNC_CALLBACK, BURP_SIZE_T_FORMAT, usage, maxStackedAsyncCallback, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_SETUP, BURP_SIZE_T_FORMAT, usage, maxSetup, minimum);
     }
 
-    void printDepthUsageDefines(const Runnable & runnable) {
+    void printDepthUsageDefines(const Runnable & runnable, const size_t minimum) {
       BurpUnity::Depth::Usage usage = runnable.getUsage();
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_DEPTH, BURP_SIZE_T_FORMAT, usage, maxDepth);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_BEFORE_EACH, BURP_SIZE_T_FORMAT, usage, maxBeforeEach);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_BEFORE_EACH, BURP_SIZE_T_FORMAT, usage, maxAsyncBeforeEach);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_AFTER_EACH, BURP_SIZE_T_FORMAT, usage, maxAfterEach);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_AFTER_EACH, BURP_SIZE_T_FORMAT, usage, maxAsyncAfterEach);
-      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_LOOP, BURP_SIZE_T_FORMAT, usage, maxLoop);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_DEPTH, BURP_SIZE_T_FORMAT, usage, maxDepth, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_BEFORE_EACH, BURP_SIZE_T_FORMAT, usage, maxBeforeEach, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_BEFORE_EACH, BURP_SIZE_T_FORMAT, usage, maxAsyncBeforeEach, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_AFTER_EACH, BURP_SIZE_T_FORMAT, usage, maxAfterEach, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_ASYNC_AFTER_EACH, BURP_SIZE_T_FORMAT, usage, maxAsyncAfterEach, minimum);
+      PRINT_FIELD_DEFINE(BURP_UNITY_MAX_LOOP, BURP_SIZE_T_FORMAT, usage, maxLoop, minimum);
     }
 
   }
